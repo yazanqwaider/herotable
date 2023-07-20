@@ -1,0 +1,24 @@
+{
+  "name": "herotable",
+  "version": "1.0.0",
+  "description": "Herotable",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yazanqwaider/herotable.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yazanqwaider/herotable/issues"
+  },
+  "homepage": "https://github.com/yazanqwaider/herotable#readme",
+  "devDependencies": {
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
+  }
+}
