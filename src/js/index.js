@@ -3,10 +3,15 @@ $.fn.herotable = function() {
     const header = table.find('thead tr');
     const body = table.find('tbody').clone();
 
+    let table_height = table.outerHeight();
+    let active_resizer_col = null;
+
     let header_rows_values = [];
     header.each((row_index, row) => {
+        let header_row_cols = [];
+
         let header_row = {
-            html: row.outerHTML,
+            html: $(row)[0].outerHTML,
             cols: [],
         };
 
@@ -25,10 +30,14 @@ $.fn.herotable = function() {
     let body_rows_values = getBodyRowsValues();
     
     if(header) {
+        const header_cols_length = $(header).find('th').length;
         header.find('th').each(function(header_col_index, header_col) {
             initializeSearchInput(header_col_index, header_col);
             initializeSortBtn(header_col_index, header_col);
+            initializeResizer(header_col_index, header_col, header_cols_length);
         });
+
+        recalculateResizerHeight();
     }
 
     function getBodyRowsValues() {
@@ -68,8 +77,7 @@ $.fn.herotable = function() {
                         if(col_value.includes(value)) {
                             valid_rows+= body_rows_values[i].html;
                         }
-                    }							
-
+                    }
                 }
                 else {
                     for (let i = 0; i < body_rows_values.length; i++) {
@@ -78,6 +86,7 @@ $.fn.herotable = function() {
                 }
 
                 table.find('tbody').html(valid_rows);
+                recalculateResizerHeight();
             });
     }
 
@@ -107,6 +116,40 @@ $.fn.herotable = function() {
             body_rows_values.forEach((row_values, index) => sorted_rows+= row_values.html);
 
             table.find('tbody').html(sorted_rows);
+        });
+    }
+
+    function initializeResizer(header_col_index, header_col, header_cols_length) {
+        if(header_col_index < header_cols_length - 1) {
+            $(header_col).append(`<div class="col-resizer" style="height: ${table_height}px"></div>`);
+        }
+
+        let x = 0;
+        let width = 0;
+        $(header_col).find('.col-resizer').on('mousedown', function(e) {
+            if(active_resizer_col == null) {
+                active_resizer_col = $(this).parent();
+                x = e.clientX;
+                width = active_resizer_col.width();
+                
+                $(document).on('mousemove', function(e) {
+                    const newClientX = e.clientX;
+                    active_resizer_col.css('width', width + newClientX - x);
+                });    
+
+                $(document).on('mouseup', function(e) {
+                    $(document).off('mousemove');
+                    $(document).off('mouseup');
+                    active_resizer_col = null;
+                });   
+            }
+        });
+    }
+
+    function recalculateResizerHeight() {
+        table_height = table.outerHeight();
+        table.find('.col-resizer').each(function(index, resizer) {
+            $(resizer).height(table_height);
         });
     }
 };
