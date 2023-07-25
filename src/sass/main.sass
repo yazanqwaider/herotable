@@ -1,5 +1,31 @@
 .herotable
-        
+
+    .herotable-wrapper
+        position: relative
+    
+        &.scrollable-herotable-wrapper
+            height: 50vh
+            overflow: auto
+
+            &::-webkit-scrollbar 
+                width: 6px
+
+            &::-webkit-scrollbar-track 
+                background: #f5f5f5
+                border-radius: 6px
+            
+            &::-webkit-scrollbar-thumb 
+                background: #8f8f8f
+                border-radius: 6px
+            
+            &::-webkit-scrollbar-thumb:hover 
+                background: #5a5a5a
+            
+
+            thead
+                position: sticky
+                top: -1px
+
     table
         border: 1px solid #ededed
         width: 100%
@@ -45,6 +71,9 @@
         right: 0
         width: 2px
         cursor: col-resize
-        background: #f1f1f1
+        background: transparent
+
+        &:hover
+            background: #f1f1f1
 
 

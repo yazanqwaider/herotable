@@ -3,8 +3,12 @@ $.fn.herotable = function() {
         const table = $(this);
         const header = table.find('thead tr');
         const body = table.find('tbody').clone();
-    
-        table.wrap(`<div class="herotable"></div>`);
+        
+        // TODO: change the true to value from options
+        const scrollable_class = (true)? 'scrollable-herotable-wrapper' : '';
+        let herotable_wrapper = `<div class="herotable-wrapper ${scrollable_class}"></div>`;
+
+        table.wrap(`<div class="herotable">${herotable_wrapper}</div>`);
         initializeGeneralSearchInput();
     
         let table_height = table.outerHeight();
@@ -65,9 +69,9 @@ $.fn.herotable = function() {
 
         function initializeGeneralSearchInput() {
             const general_input = $('<input type="search" class="general-search-input">');
-            table.parent().prepend(general_input);
+            table.closest('.herotable').prepend(general_input);
 
-            general_input.on('keyup', function(e) {
+            general_input.on('keyup search', function(e) {
                 const value = $(this).val();
                 let valid_rows = '';
 
@@ -101,15 +105,17 @@ $.fn.herotable = function() {
     
             // register the search input event
             const header_search_input = header_col.find('.header-search-input');
-            header_search_input.on('keyup', function(e) {
+            header_search_input.on('keyup search', function(e) {
                     const value = $(this).val();
                     let valid_rows = '';
     
                     if(value) {
                         for (let i = 0; i < body_rows_values.length; i++) {
-                            const col_value = body_rows_values[i].cols[header_col_index].value;
-                            if(col_value.includes(value)) {
-                                valid_rows+= body_rows_values[i].html;
+                            if(header_col_index <= body_rows_values[i].cols.length - 1) {
+                                const col_value = body_rows_values[i].cols[header_col_index].value;
+                                if(col_value.includes(value)) {
+                                    valid_rows+= body_rows_values[i].html;
+                                }
                             }
                         }
                     }
