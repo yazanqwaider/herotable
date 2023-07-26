@@ -25,7 +25,7 @@ $.fn.herotable = function() {
                 header_row.cols.push({
                     html: col.outerHTML,
                     value: $(col).text(),
-                    sort_by: null
+                    sort_by: ''
                 });
             });
     
@@ -55,10 +55,15 @@ $.fn.herotable = function() {
                 };
     
                 $(row).find('td').each((col_index, col) => {
-                    body_row.cols.push({
-                        html: col.outerHTML,
-                        value: $(col).text()
-                    });
+                    const colspan = $(col).attr('colspan') || 1;
+                    
+                    for (let i = 0; i < colspan; i++) {
+                        body_row.cols.push({
+                            html: col.outerHTML,
+                            value: $(col).text(),
+                            original: i == 0
+                        });
+                    }
                 });
     
                 body_rows_values.push(body_row);
@@ -133,7 +138,18 @@ $.fn.herotable = function() {
         function initializeSortBtn(header_col_index, header_col) {
             header_col = $(header_col);
     
-            header_col.append('<span class="header-sort-icon"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 21 21"><path d="M8 10v4h4l-6 7-6-7h4v-4h-4l6-7 6 7h-4zm16 5h-10v2h10v-2zm0 6h-10v-2h10v2zm0-8h-10v-2h10v2zm0-4h-10v-2h10v2zm0-4h-10v-2h10v2z"/></svg></span>');
+            const unsorted_icon = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"><path d="M12 3.202l3.839 4.798h-7.678l3.839-4.798zm0-3.202l-8 10h16l-8-10zm3.839 16l-3.839 4.798-3.839-4.798h7.678zm4.161-2h-16l8 10 8-10z"/></svg>';
+            const asc_sort_icon = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"><path d="M12 0l-8 10h16l-8-10zm3.839 16l-3.839 4.798-3.839-4.798h7.678zm4.161-2h-16l8 10 8-10z"/></svg>';
+            const desc_sort_icon = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"><path d="M12 3.202l3.839 4.798h-7.678l3.839-4.798zm0-3.202l-8 10h16l-8-10zm8 14h-16l8 10 8-10z"/></svg>';
+
+            const sorting_icons_map = {
+                '': unsorted_icon,
+                'asc': asc_sort_icon,
+                'desc': desc_sort_icon,
+            };
+
+            const first_sort_by = header_rows_values[0].cols[header_col_index].sort_by;
+            header_col.append(`<span class="header-sort-icon">${sorting_icons_map[first_sort_by]}</span>`);
     
             // register the sort icon event
             const header_sort_icon = header_col.find('.header-sort-icon');
@@ -141,15 +157,22 @@ $.fn.herotable = function() {
                 const old_sort_by = header_rows_values[0].cols[header_col_index].sort_by;
                 let new_sort_by = (old_sort_by == 'asc')? 'desc' : 'asc';
                 header_rows_values[0].cols[header_col_index].sort_by = new_sort_by;
-    
+                $(this).html(sorting_icons_map[new_sort_by]);
+
                 body_rows_values.sort(function(first, second) {
-                    const first_value = first.cols[header_col_index].value;
-                    const second_value = second.cols[header_col_index].value;
-    
-                    if(new_sort_by == 'asc') {
-                        return first_value.localeCompare(second_value);
+                    if(header_col_index <= first.cols.length - 1 && header_col_index <= second.cols.length - 1) {
+                        const first_value = first.cols[header_col_index].value;
+                        const second_value = second.cols[header_col_index].value;
+        
+                        if(new_sort_by == 'asc') {
+                            return first_value.localeCompare(second_value);
+                        }
+                        return second_value.localeCompare(first_value);
                     }
-                    return second_value.localeCompare(first_value);
+                    else {
+                        console.error("The row has incorrect columns count.");
+                        return -1;
+                    }
                 });
     
                 let sorted_rows = '';
