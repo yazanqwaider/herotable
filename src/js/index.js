@@ -306,7 +306,21 @@ $.extend(Herotable.prototype, {
     },
     
     destroy: function() {
-        
+        this.table.closest('.herotable').find('.general-search-input').remove();
+        this.table.unwrap().unwrap();
+
+        let origin_header = '';
+        this.header_rows_values.forEach((header_row) => {
+            origin_header+= header_row.origin_html;
+        });
+        this.table.find('thead').html(origin_header);
+
+
+        let origin_body = '';
+        this.body_rows_values.forEach((body_row) => {
+            origin_body+= body_row.origin_html;
+        });
+        this.body.html(origin_body);
     }
 });
 
