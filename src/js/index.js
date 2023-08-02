@@ -1,3 +1,5 @@
+import {defaults} from './defaults.js';
+
 let Herotable = function(element, options) {
     this.herotable = this;
     this.table = $(element);
@@ -7,14 +9,16 @@ let Herotable = function(element, options) {
     this.body_rows_values  = [];
     this.table_height = null;
     this.active_resizer_col = null;
+    this.hidden_columns = [];
+    this.options = {};
 
+    $.extend(this.options, defaults, options);
     this.init();
 }
 
 $.extend(Herotable.prototype, {
     init: function() {
-        // TODO: change the true to value from options
-        const scrollable_class = (false)? 'scrollable-herotable-wrapper' : '';
+        const scrollable_class = (this.options.scrollableWrapper)? 'scrollable-herotable-wrapper' : '';
         let herotable_wrapper = `<div class="herotable-wrapper ${scrollable_class}"></div>`;
 
         this.table.wrap(`<div class="herotable">${herotable_wrapper}</div>`);
@@ -28,10 +32,19 @@ $.extend(Herotable.prototype, {
         if(this.header) {
             const header_cols_length = $(this.header).find('th').length;
             this.header.find('th').each((header_col_index, header_col) => {
-                this.initializeSearchInput(header_col_index, header_col);
-                this.initializeHideBtn(header_col_index, header_col);
+                if(this.options.columnSearch) {
+                    this.initializeSearchInput(header_col_index, header_col);
+                }
+
+                if(this.options.hideColumn) {
+                    this.initializeHideBtn(header_col_index, header_col);
+                }
+
                 this.initializeSortBtn(header_col_index, header_col);
-                this.initializeResizer(header_col_index, header_col, header_cols_length);
+
+                if(this.options.columnResizer) {
+                    this.initializeResizer(header_col_index, header_col, header_cols_length);
+                }
             });
     
             this.recalculateResizerHeight();
@@ -114,7 +127,7 @@ $.extend(Herotable.prototype, {
     },
 
     initializeGeneralSearchInput: function() {
-        const general_input = $('<input type="search" class="general-search-input">');
+        const general_input = $(`<input type="search" class="general-search-input" placeholder="${this.options.lang.generalSearch}">`);
         this.table.closest('.herotable').prepend(general_input);
 
         general_input.on('keyup search', (e) => {
@@ -203,7 +216,63 @@ $.extend(Herotable.prototype, {
                 this.table.find(`tbody tr:eq(${body_row_index}) td:eq(${header_col_index})`).hide();
                 body_row.cols[header_col_index].is_hidden = true;
             });
+
+            this.hidden_columns.push(header_col_index);
+
+            if(this.hidden_columns.length == 1) {
+                this.showTableControlBtn();
+            }
+
+            if(this.options.afterHideCallback) {
+                const data = {
+                    col_index: header_col_index,
+                };
+                this.options.afterHideCallback(data);
+            }
         });
+    },
+
+    showTableControlBtn: function() {
+        const control_elements = $(`
+            <div class="control-layout">
+                <button><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 14.187v-4.374c-2.148-.766-2.726-.802-3.027-1.529-.303-.729.083-1.169 1.059-3.223l-3.093-3.093c-2.026.963-2.488 1.364-3.224 1.059-.727-.302-.768-.889-1.527-3.027h-4.375c-.764 2.144-.8 2.725-1.529 3.027-.752.313-1.203-.1-3.223-1.059l-3.093 3.093c.977 2.055 1.362 2.493 1.059 3.224-.302.727-.881.764-3.027 1.528v4.375c2.139.76 2.725.8 3.027 1.528.304.734-.081 1.167-1.059 3.223l3.093 3.093c1.999-.95 2.47-1.373 3.223-1.059.728.302.764.88 1.529 3.027h4.374c.758-2.131.799-2.723 1.537-3.031.745-.308 1.186.099 3.215 1.062l3.093-3.093c-.975-2.05-1.362-2.492-1.059-3.223.3-.726.88-.763 3.027-1.528zm-4.875.764c-.577 1.394-.068 2.458.488 3.578l-1.084 1.084c-1.093-.543-2.161-1.076-3.573-.49-1.396.581-1.79 1.693-2.188 2.877h-1.534c-.398-1.185-.791-2.297-2.183-2.875-1.419-.588-2.507-.045-3.579.488l-1.083-1.084c.557-1.118 1.066-2.18.487-3.58-.579-1.391-1.691-1.784-2.876-2.182v-1.533c1.185-.398 2.297-.791 2.875-2.184.578-1.394.068-2.459-.488-3.579l1.084-1.084c1.082.538 2.162 1.077 3.58.488 1.392-.577 1.785-1.69 2.183-2.875h1.534c.398 1.185.792 2.297 2.184 2.875 1.419.588 2.506.045 3.579-.488l1.084 1.084c-.556 1.121-1.065 2.187-.488 3.58.577 1.391 1.689 1.784 2.875 2.183v1.534c-1.188.398-2.302.791-2.877 2.183zm-7.125-5.951c1.654 0 3 1.346 3 3s-1.346 3-3 3-3-1.346-3-3 1.346-3 3-3zm0-2c-2.762 0-5 2.238-5 5s2.238 5 5 5 5-2.238 5-5-2.238-5-5-5z"/></svg></button>
+                <ul>
+                    <li class="show-hidden-columns">Show hidden columns</li>
+                </ul>
+            </div>
+        `);
+        this.table.closest('.herotable-wrapper').append(control_elements);
+
+        control_elements.find('button').on('click', function() {
+            $(this).next('ul').toggle();
+        });
+
+        let self = this;
+        control_elements.find('.show-hidden-columns').on('click', function() {
+            $(this).closest('ul').toggle();
+            self.showHiddenColumns();
+        });
+    },
+
+    removeTableControlBtn: function() {
+        this.table.closest('.herotable-wrapper').find('.control-layout').remove();
+        this.hidden_columns = [];
+    },
+
+    showHiddenColumns: function() {
+        for(let hci = 0; hci < this.hidden_columns.length; hci++) {
+            const header_col_index = this.hidden_columns[hci];
+
+            this.table.find(`thead tr th:eq(${header_col_index})`).show();
+            this.header_rows_values[0].cols[header_col_index].is_hidden = false;
+    
+            this.body_rows_values.forEach((body_row, body_row_index) => {
+                this.table.find(`tbody tr:eq(${body_row_index}) td:eq(${header_col_index})`).show();
+                body_row.cols[header_col_index].is_hidden = false;
+            });
+        }
+
+        this.removeTableControlBtn();
     },
 
     initializeSortBtn: function(header_col_index, header_col) {
@@ -289,10 +358,20 @@ $.extend(Herotable.prototype, {
                 $(document).on('mouseup', function(e) {
                     $(document).off('mousemove');
                     $(document).off('mouseup');
+
+                    const data = {
+                        col_index: header_col_index,
+                        new_width: self.active_resizer_col.width(),
+                    };
+
                     self.active_resizer_col = null;
 
                     self.updateNewHtmlForHeaderRows();
                     self.updateNewHtmlForBodyRows();
+
+                    if(self.options.afterResizeCallback != null) {
+                        self.options.afterResizeCallback(data);
+                    }
                 });
             }
         });
@@ -324,11 +403,11 @@ $.extend(Herotable.prototype, {
     }
 });
 
-$.fn.herotable = function() {
+$.fn.herotable = function(options) {
     return this.each(function() {
         if(this.herotable) return;
         
-        var instance = new Herotable(this, {});
+        let instance = new Herotable(this, options);
         $.extend(this, instance);
     });
 };
