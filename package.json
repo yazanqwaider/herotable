@@ -7,7 +7,8 @@
     "watch": "npx webpack --watch --config webpack.config.js",
     "build": "npx webpack --config webpack.config.js",
     "watch-style": "sass src/sass/main.sass:dist/css/main.min.css --watch --style compressed",
-    "build-style": "sass src/sass/main.sass:dist/css/main.min.css --style compressed"
+    "build-style": "sass src/sass/main.sass:dist/css/main.min.css --style compressed",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -21,6 +22,9 @@
   },
   "homepage": "https://github.com/yazanqwaider/herotable#readme",
   "devDependencies": {
+    "jest": "^29.6.2",
+    "jest-environment-jsdom": "^29.6.2",
+    "jquery": "^3.7.0",
     "sass": "^1.64.1",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4"
