@@ -3,10 +3,12 @@ import {defaults} from './defaults.js';
 let Herotable = function(element, options) {
     this.herotable = this;
     this.table = $(element);
-    this.header = this.table.find('thead tr');
+    this.header = this.table.find('thead');
     this.body = this.table.find('tbody');
+    this.footer = this.table.find('tfoot');
     this.header_rows_values  = [];
     this.body_rows_values  = [];
+    this.footer_rows_values  = [];
     this.table_height = null;
     this.active_resizer_col = null;
     this.hidden_columns = [];
@@ -28,32 +30,36 @@ $.extend(Herotable.prototype, {
         this.table_height = this.table.outerHeight();
         this.header_rows_values = this.getHeaderRowsValues();
         this.body_rows_values = this.getBodyRowsValues();
-        
-        if(this.header) {
-            const header_cols_length = $(this.header).find('th').length;
-            this.header.find('th').each((header_col_index, header_col) => {
+        this.footer_rows_values = this.getFooterRowsValues();
+
+        if(this.header && this.header_rows_values.length > 0) {          
+            const header_row_cols = this.header.find('tr').first().find('th');
+            const header_cols_length = header_row_cols.length;
+
+            header_row_cols.each((header_col_index, header_row_col) => {
                 if(this.options.columnSearch) {
-                    this.initializeSearchInput(header_col_index, header_col);
+                    this.initializeSearchInput(header_col_index, header_row_col);
                 }
 
                 if(this.options.hideColumn) {
-                    this.initializeHideBtn(header_col_index, header_col);
+                    this.initializeHideBtn(header_col_index, header_row_col);
                 }
 
-                this.initializeSortBtn(header_col_index, header_col);
+                this.initializeSortBtn(header_col_index, header_row_col);
 
                 if(this.options.columnResizer) {
-                    this.initializeResizer(header_col_index, header_col, header_cols_length);
+                    this.initializeResizer(header_col_index, header_row_col, header_cols_length);
                 }
             });
-    
+
             this.recalculateResizerHeight();
         }
     },
 
     getHeaderRowsValues: function() {
         let header_rows_values = [];
-        this.header.each((row_index, row) => {
+        const header_rows = this.header.find('tr');
+        header_rows.each((row_index, row) => {
             let header_row = {
                 origin_html: $(row)[0].outerHTML,
                 html: $(row)[0].outerHTML,
@@ -105,9 +111,39 @@ $.extend(Herotable.prototype, {
 
         return body_rows_values;
     },
+
+    getFooterRowsValues: function() {
+        let footer_rows_values = [];
+        this.footer.find('tr').each((row_index, row) => {
+            let footer_row = {
+                origin_html: row.outerHTML,
+                html: row.outerHTML,
+                cols: [],
+            };
+
+            $(row).find('td').each((col_index, col) => {
+                const colspan = $(col).attr('colspan') || 1;
+                
+                for (let i = 0; i < colspan; i++) {
+                    footer_row.cols.push({
+                        origin_html: col.outerHTML,
+                        html: col.outerHTML,
+                        value: $(col).text(),
+                        is_colspan: colspan > 1,
+                        original: i == 0,
+                        is_hidden: false
+                    });
+                }
+            });
+
+            footer_rows_values.push(footer_row);
+        });
+
+        return footer_rows_values;
+    },
     
     updateNewHtmlForHeaderRows() {
-        this.header.each((row_index, row) => {
+        this.header.find('tr').each((row_index, row) => {
             this.header_rows_values[row_index].html = $(row)[0].outerHTML;
 
             $(row).find('th').each((col_index, col) => {
@@ -122,6 +158,16 @@ $.extend(Herotable.prototype, {
 
             $(row).find('td').each((col_index, col) => {
                 this.body_rows_values[row_index].cols[col_index].html = col.outerHTML;
+            });
+        });
+    },
+
+    updateNewHtmlForFooterRows: function() {
+        this.footer.find('tr').each((row_index, row) => {
+            this.footer_rows_values[row_index].html = row.outerHTML,
+
+            $(row).find('td').each((col_index, col) => {
+                this.footer_rows_values[row_index].cols[col_index].html = col.outerHTML;
             });
         });
     },
@@ -209,12 +255,20 @@ $.extend(Herotable.prototype, {
                 return false;
             }
 
+            // hide the column in header side
             header_col.hide();
             this.header_rows_values[0].cols[header_col_index].is_hidden = true;
 
+            // hide the column in body side
             this.body_rows_values.forEach((body_row, body_row_index) => {
-                this.table.find(`tbody tr:eq(${body_row_index}) td:eq(${header_col_index})`).hide();
+                this.body.find(`tr:eq(${body_row_index}) td:eq(${header_col_index})`).hide();
                 body_row.cols[header_col_index].is_hidden = true;
+            });
+
+            // hide the column in footer side
+            this.footer_rows_values.forEach((footer_row, footer_row_index) => {
+                this.footer.find(`tr:eq(${footer_row_index}) td:eq(${header_col_index})`).hide();
+                footer_row.cols[header_col_index].is_hidden = true;
             });
 
             this.hidden_columns.push(header_col_index);
@@ -263,12 +317,20 @@ $.extend(Herotable.prototype, {
         for(let hci = 0; hci < this.hidden_columns.length; hci++) {
             const header_col_index = this.hidden_columns[hci];
 
-            this.table.find(`thead tr th:eq(${header_col_index})`).show();
+            // show the column in header side
+            this.header.find(`tr th:eq(${header_col_index})`).show();
             this.header_rows_values[0].cols[header_col_index].is_hidden = false;
     
+            // show the column in body side
             this.body_rows_values.forEach((body_row, body_row_index) => {
-                this.table.find(`tbody tr:eq(${body_row_index}) td:eq(${header_col_index})`).show();
+                this.body.find(`tr:eq(${body_row_index}) td:eq(${header_col_index})`).show();
                 body_row.cols[header_col_index].is_hidden = false;
+            });
+
+            // show the column in footer side
+            this.footer_rows_values.forEach((footer_row, footer_row_index) => {
+                this.footer.find(`tr:eq(${footer_row_index}) td:eq(${header_col_index})`).show();
+                footer_row.cols[header_col_index].is_hidden = false;
             });
         }
 
@@ -343,8 +405,11 @@ $.extend(Herotable.prototype, {
                     'width': width
                 });
 
-                const body_cols = self.table.find('tbody tr').find(`td:eq(${header_col_index})`);
+                const body_cols = self.body.find('tr').find(`td:eq(${header_col_index})`);
+                const footer_cols = self.footer.find('tr').find(`td:eq(${header_col_index})`);
+
                 body_cols.css({'min-width': width, 'max-width': width, 'width': width});
+                footer_cols.css({'min-width': width, 'max-width': width, 'width': width});
                 
                 $(document).on('mousemove', function(e) {
                     const newClientX = e.clientX;
@@ -353,6 +418,8 @@ $.extend(Herotable.prototype, {
                     self.active_resizer_col.css({'width': new_width, 'min-width': new_width, 'max-width': new_width});
 
                     body_cols.css({'width': new_width, 'min-width': new_width, 'max-width': new_width});
+
+                    footer_cols.css({'width': new_width, 'min-width': new_width, 'max-width': new_width});
                 });    
 
                 $(document).on('mouseup', function(e) {
@@ -368,6 +435,7 @@ $.extend(Herotable.prototype, {
 
                     self.updateNewHtmlForHeaderRows();
                     self.updateNewHtmlForBodyRows();
+                    self.updateNewHtmlForFooterRows();
 
                     if(self.options.afterResizeCallback != null) {
                         self.options.afterResizeCallback(data);
