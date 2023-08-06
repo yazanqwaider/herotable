@@ -14,7 +14,7 @@ let Herotable = function(element, options) {
     this.hidden_columns = [];
     this.options = {};
 
-    $.extend(this.options, defaults, options);
+    $.extend(true, this.options, defaults, options);
     this.init();
 }
 
@@ -54,6 +54,8 @@ $.extend(Herotable.prototype, {
 
             this.recalculateResizerHeight();
         }
+
+        this.showNoDataRowIfNoData();
     },
 
     getHeaderRowsValues: function() {
@@ -199,8 +201,9 @@ $.extend(Herotable.prototype, {
                 }			
             }
 
-            this.table.find('tbody').html(valid_rows);
+            this.body.html(valid_rows);
             this.recalculateResizerHeight();
+            this.showNoDataRowIfNoData();
         });
     },
   
@@ -211,28 +214,29 @@ $.extend(Herotable.prototype, {
         // register the search input event
         const header_search_input = header_col.find('.header-search-input');
         header_search_input.on('keyup search', (e) => {
-                const value = e.target.value;
-                let valid_rows = '';
+            const value = e.target.value;
+            let valid_rows = '';
 
-                if(value) {
-                    for (let i = 0; i < this.body_rows_values.length; i++) {
-                        if(header_col_index <= this.body_rows_values[i].cols.length - 1) {
-                            const col_value = this.body_rows_values[i].cols[header_col_index].value;
-                            if(col_value.includes(value)) {
-                                valid_rows+= this.body_rows_values[i].html;
-                            }
+            if(value) {
+                for (let i = 0; i < this.body_rows_values.length; i++) {
+                    if(header_col_index <= this.body_rows_values[i].cols.length - 1) {
+                        const col_value = this.body_rows_values[i].cols[header_col_index].value;
+                        if(col_value.includes(value)) {
+                            valid_rows+= this.body_rows_values[i].html;
                         }
                     }
                 }
-                else {
-                    for (let i = 0; i < this.body_rows_values.length; i++) {
-                        valid_rows+= this.body_rows_values[i].html;
-                    }			
-                }
+            }
+            else {
+                for (let i = 0; i < this.body_rows_values.length; i++) {
+                    valid_rows+= this.body_rows_values[i].html;
+                }			
+            }
 
-                this.table.find('tbody').html(valid_rows);
-                this.recalculateResizerHeight();
-            });
+            this.table.find('tbody').html(valid_rows);
+            this.recalculateResizerHeight();
+            this.showNoDataRowIfNoData();
+        });
     },
 
     initializeHideBtn: function(header_col_index, header_col) {
@@ -445,6 +449,18 @@ $.extend(Herotable.prototype, {
         });
     },
 
+    showNoDataRowIfNoData: function() {
+        if(this.body.find('tr').length == 0 && this.options.noAvailableData) {
+            const no_available_data_row = $(
+                `<tr>
+                    <td colspan="100%" style="text-align: center;">${this.options.lang.noAvailableData}</td>
+               </tr>`
+            );
+    
+            this.body.html(no_available_data_row);
+        }
+    },
+    
     recalculateResizerHeight: function() {
         this.table_height = this.table.outerHeight();
         this.table.find('.col-resizer').each((index, resizer) => {

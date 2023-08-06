@@ -5,7 +5,9 @@ export const defaults = {
     hideColumn: true,
     afterResizeCallback: null,
     afterHideCallback: null,
+    noAvailableData: true,
     lang: {
         generalSearch: "Search",
+        noAvailableData: "No available data in table"
     }
 }
