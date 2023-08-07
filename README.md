@@ -14,7 +14,7 @@ From CDN :
 ```
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/herotable@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/herotable@latest/dist/js/index.js"></script>
 ```
 
 #### Note: 
