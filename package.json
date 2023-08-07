@@ -1,6 +1,6 @@
 {
   "name": "herotable",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Herotable",
   "main": "./src/js/index.js",
   "scripts": {
@@ -14,7 +14,7 @@
     "type": "git",
     "url": "git+https://github.com/yazanqwaider/herotable.git"
   },
-  "keywords": [],
+  "keywords": ["Herotable", "Table"],
   "author": "Yazan Qwaider",
   "license": "ISC",
   "bugs": {

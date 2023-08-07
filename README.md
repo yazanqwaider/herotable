@@ -7,7 +7,18 @@ Herotable is a plug-in for the jQuery Javascript library, to make your tables ha
 npm install herotable
 ```
 
-#### Note: You must import the jquery plugin before the herotable.
+From CDN :
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/herotable@latest/dist/css/main.min.css">
+```
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/herotable@latest"></script>
+```
+
+#### Note: 
+You must import the jquery plugin before the herotable.
 
 ### Usage
 
