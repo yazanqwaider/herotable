@@ -15,6 +15,7 @@ let Herotable = function(element, options) {
     this.options = {};
 
     $.extend(true, this.options, defaults, options);
+
     this.init();
 }
 
@@ -215,7 +216,9 @@ $.extend(Herotable.prototype, {
             this.body_rows_values[row_index].html = row.outerHTML,
 
             $(row).find('td').each((col_index, col) => {
-                this.body_rows_values[row_index].cols[col_index].html = col.outerHTML;
+                if(col_index < this.body_rows_values[row_index].cols.length) {
+                    this.body_rows_values[row_index].cols[col_index].html = col.outerHTML;
+                }
             });
         });
     },
