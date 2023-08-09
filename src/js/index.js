@@ -32,6 +32,8 @@ $.extend(Herotable.prototype, {
         this.body_rows_values = this.getBodyRowsValues();
         this.footer_rows_values = this.getFooterRowsValues();
 
+        this.applyRequiredStylesOnColumns();
+
         if(this.header && this.header_rows_values.length > 0) {          
             const header_row_cols = this.header.find('tr').first().find('th');
             const header_cols_length = header_row_cols.length;
@@ -144,6 +146,57 @@ $.extend(Herotable.prototype, {
         return footer_rows_values;
     },
     
+    applyRequiredStylesOnColumns: function() {
+        const columns_styles = this.options.columns;
+
+        this.header.find('tr').each((row_index, row) => {
+            $(row).find('th').each((col_index, col) => {
+                const width = columns_styles.sizes[col_index] || $(col).width();
+                $(col).css('width', width + 'px');
+                
+                if(columns_styles.hidden.includes(col_index)) {
+                    this.header_rows_values[row_index].cols[col_index].is_hidden = true;
+                    $(col).css('display', 'none');
+                    this.hidden_columns.push(col_index);    // do it just one time
+                }
+            });
+        });
+
+        this.body.find('tr').each((row_index, row) => {
+            $(row).find('td').each((col_index, col) => {
+                if(columns_styles.sizes[col_index]) {
+                    $(col).css('width', columns_styles.sizes[col_index] + 'px');
+                }
+
+                if(columns_styles.hidden.includes(col_index)) {
+                    this.body_rows_values[row_index].cols[col_index].is_hidden = true;
+                    $(col).css('display', 'none');
+                }
+            });
+        });
+
+        this.footer.find('tr').each((row_index, row) => {
+            $(row).find('td').each((col_index, col) => {
+                if(columns_styles.sizes[col_index]) {
+                    $(col).css('width', columns_styles.sizes[col_index] + 'px');
+                }
+
+                if(columns_styles.hidden.includes(col_index)) {
+                    this.footer_rows_values[row_index].cols[col_index].is_hidden = true;
+                    $(col).css('display', 'none');
+                }
+            });
+        });
+
+        this.updateNewHtmlForHeaderRows();
+        this.updateNewHtmlForBodyRows();
+        this.updateNewHtmlForFooterRows();
+
+        if(this.hidden_columns.length > 0) {
+            this.showTableControlBtn();
+        }
+    },
+
     updateNewHtmlForHeaderRows() {
         this.header.find('tr').each((row_index, row) => {
             this.header_rows_values[row_index].html = $(row)[0].outerHTML;
@@ -312,7 +365,13 @@ $.extend(Herotable.prototype, {
         let self = this;
         control_elements.find('.show-hidden-columns').on('click', function() {
             $(this).closest('ul').toggle();
+            const hidden_columns = self.hidden_columns;
             self.showHiddenColumns();
+
+            if(self.options.afterShowHiddenColsCallback) {
+                const data = {cols: hidden_columns};
+                self.options.afterShowHiddenColsCallback(data);
+            }
         });
     },
 
