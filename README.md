@@ -46,10 +46,13 @@ $('table').herotable({
 |noAvailableData     | When the table is empty, would you like to show the empty row or not, Boolean (default: true)|
 |afterResizeCallback | You can call your callback function after column resizing, there is passed parameter to function is data contains on (new_width and col_index), function (default: null)|
 |afterHideCallback   | You can call your callback function after column hiding, function (default: null)|
-|lang                | Change the default text on elements, like (generalSearch, noAvailableData)|
+|afterShowHiddenColsCallback| You can call your callback function after show the hidden columns, function (default: null)|
+|hideFooterIfBodyEmpty| You can hide the footer when you search on something and the no results, Boolean (default: true)|
+|columns             | From `columns` option you can edit on column width ot hide column from begining, Object (default: {sizes: {}, hidden: []})|
+|lang                | Change the default text on elements, like (generalSearch, noAvailableData, showHiddenColumn)|
 
 
-Ex:
+Example:
 
 ```js
 $('table').herotable({
@@ -63,6 +66,14 @@ $('table').herotable({
 });
 ```
 
+Another Example:
+```js
+$('table').herotable({
+    columns: {
+        sizes: {0: 100, 1: 50}, // first column will take "100px", and the second "50px"
+        hidden: [2, 3], // hide the third and fourth columns
+    },
+});
 
 If you would like to destroy the herotable :
 ```js
