@@ -15,6 +15,7 @@ let Herotable = function(element, options) {
     this.options = {};
 
     $.extend(true, this.options, defaults, options);
+
     this.init();
 }
 
@@ -22,6 +23,9 @@ $.extend(Herotable.prototype, {
     init: function() {
         const scrollable_class = (this.options.scrollableWrapper)? 'scrollable-herotable-wrapper' : '';
         let herotable_wrapper = `<div class="herotable-wrapper ${scrollable_class}"></div>`;
+        if(scrollable_class != '') {
+            herotable_wrapper = `<div class="outer-herotable-wrapper">${herotable_wrapper}</div>`;
+        }
 
         this.table.wrap(`<div class="herotable">${herotable_wrapper}</div>`);
 
@@ -31,6 +35,8 @@ $.extend(Herotable.prototype, {
         this.header_rows_values = this.getHeaderRowsValues();
         this.body_rows_values = this.getBodyRowsValues();
         this.footer_rows_values = this.getFooterRowsValues();
+
+        this.applyRequiredStylesOnColumns();
 
         if(this.header && this.header_rows_values.length > 0) {          
             const header_row_cols = this.header.find('tr').first().find('th');
@@ -144,6 +150,57 @@ $.extend(Herotable.prototype, {
         return footer_rows_values;
     },
     
+    applyRequiredStylesOnColumns: function() {
+        const columns_styles = this.options.columns;
+
+        this.header.find('tr').each((row_index, row) => {
+            $(row).find('th').each((col_index, col) => {
+                const width = columns_styles.sizes[col_index] || $(col).width();
+                $(col).css('width', width + 'px');
+                
+                if(columns_styles.hidden.includes(col_index)) {
+                    this.header_rows_values[row_index].cols[col_index].is_hidden = true;
+                    $(col).css('display', 'none');
+                    this.hidden_columns.push(col_index);    // do it just one time
+                }
+            });
+        });
+
+        this.body.find('tr').each((row_index, row) => {
+            $(row).find('td').each((col_index, col) => {
+                if(columns_styles.sizes[col_index]) {
+                    $(col).css('width', columns_styles.sizes[col_index] + 'px');
+                }
+
+                if(columns_styles.hidden.includes(col_index)) {
+                    this.body_rows_values[row_index].cols[col_index].is_hidden = true;
+                    $(col).css('display', 'none');
+                }
+            });
+        });
+
+        this.footer.find('tr').each((row_index, row) => {
+            $(row).find('td').each((col_index, col) => {
+                if(columns_styles.sizes[col_index]) {
+                    $(col).css('width', columns_styles.sizes[col_index] + 'px');
+                }
+
+                if(columns_styles.hidden.includes(col_index)) {
+                    this.footer_rows_values[row_index].cols[col_index].is_hidden = true;
+                    $(col).css('display', 'none');
+                }
+            });
+        });
+
+        this.updateNewHtmlForHeaderRows();
+        this.updateNewHtmlForBodyRows();
+        this.updateNewHtmlForFooterRows();
+
+        if(this.hidden_columns.length > 0) {
+            this.showTableControlBtn();
+        }
+    },
+
     updateNewHtmlForHeaderRows() {
         this.header.find('tr').each((row_index, row) => {
             this.header_rows_values[row_index].html = $(row)[0].outerHTML;
@@ -159,7 +216,9 @@ $.extend(Herotable.prototype, {
             this.body_rows_values[row_index].html = row.outerHTML,
 
             $(row).find('td').each((col_index, col) => {
-                this.body_rows_values[row_index].cols[col_index].html = col.outerHTML;
+                if(col_index < this.body_rows_values[row_index].cols.length) {
+                    this.body_rows_values[row_index].cols[col_index].html = col.outerHTML;
+                }
             });
         });
     },
@@ -250,8 +309,11 @@ $.extend(Herotable.prototype, {
         header_hide_icon.on('click', () => {
             // check if there and body column in the same index is not valid,
             // such as it is colspan or it is not exist.
-            const invalid_col = this.body_rows_values.find((body_row) => {
+            let invalid_col = this.body_rows_values.find((body_row) => {
                 return header_col_index > body_row.cols.length - 1 || body_row.cols[header_col_index].is_colspan;
+            });
+            invalid_col = invalid_col || this.footer_rows_values.find((footer_row) => {
+                return header_col_index > footer_row.cols.length - 1 || footer_row.cols[header_col_index].is_colspan;
             });
 
             if(invalid_col) {
@@ -284,6 +346,7 @@ $.extend(Herotable.prototype, {
             if(this.options.afterHideCallback) {
                 const data = {
                     col_index: header_col_index,
+                    width: header_col.width(),
                 };
                 this.options.afterHideCallback(data);
             }
@@ -293,13 +356,13 @@ $.extend(Herotable.prototype, {
     showTableControlBtn: function() {
         const control_elements = $(`
             <div class="control-layout">
-                <button><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 14.187v-4.374c-2.148-.766-2.726-.802-3.027-1.529-.303-.729.083-1.169 1.059-3.223l-3.093-3.093c-2.026.963-2.488 1.364-3.224 1.059-.727-.302-.768-.889-1.527-3.027h-4.375c-.764 2.144-.8 2.725-1.529 3.027-.752.313-1.203-.1-3.223-1.059l-3.093 3.093c.977 2.055 1.362 2.493 1.059 3.224-.302.727-.881.764-3.027 1.528v4.375c2.139.76 2.725.8 3.027 1.528.304.734-.081 1.167-1.059 3.223l3.093 3.093c1.999-.95 2.47-1.373 3.223-1.059.728.302.764.88 1.529 3.027h4.374c.758-2.131.799-2.723 1.537-3.031.745-.308 1.186.099 3.215 1.062l3.093-3.093c-.975-2.05-1.362-2.492-1.059-3.223.3-.726.88-.763 3.027-1.528zm-4.875.764c-.577 1.394-.068 2.458.488 3.578l-1.084 1.084c-1.093-.543-2.161-1.076-3.573-.49-1.396.581-1.79 1.693-2.188 2.877h-1.534c-.398-1.185-.791-2.297-2.183-2.875-1.419-.588-2.507-.045-3.579.488l-1.083-1.084c.557-1.118 1.066-2.18.487-3.58-.579-1.391-1.691-1.784-2.876-2.182v-1.533c1.185-.398 2.297-.791 2.875-2.184.578-1.394.068-2.459-.488-3.579l1.084-1.084c1.082.538 2.162 1.077 3.58.488 1.392-.577 1.785-1.69 2.183-2.875h1.534c.398 1.185.792 2.297 2.184 2.875 1.419.588 2.506.045 3.579-.488l1.084 1.084c-.556 1.121-1.065 2.187-.488 3.58.577 1.391 1.689 1.784 2.875 2.183v1.534c-1.188.398-2.302.791-2.877 2.183zm-7.125-5.951c1.654 0 3 1.346 3 3s-1.346 3-3 3-3-1.346-3-3 1.346-3 3-3zm0-2c-2.762 0-5 2.238-5 5s2.238 5 5 5 5-2.238 5-5-2.238-5-5-5z"/></svg></button>
+                <button><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M24 14.187v-4.374c-2.148-.766-2.726-.802-3.027-1.529-.303-.729.083-1.169 1.059-3.223l-3.093-3.093c-2.026.963-2.488 1.364-3.224 1.059-.727-.302-.768-.889-1.527-3.027h-4.375c-.764 2.144-.8 2.725-1.529 3.027-.752.313-1.203-.1-3.223-1.059l-3.093 3.093c.977 2.055 1.362 2.493 1.059 3.224-.302.727-.881.764-3.027 1.528v4.375c2.139.76 2.725.8 3.027 1.528.304.734-.081 1.167-1.059 3.223l3.093 3.093c1.999-.95 2.47-1.373 3.223-1.059.728.302.764.88 1.529 3.027h4.374c.758-2.131.799-2.723 1.537-3.031.745-.308 1.186.099 3.215 1.062l3.093-3.093c-.975-2.05-1.362-2.492-1.059-3.223.3-.726.88-.763 3.027-1.528zm-4.875.764c-.577 1.394-.068 2.458.488 3.578l-1.084 1.084c-1.093-.543-2.161-1.076-3.573-.49-1.396.581-1.79 1.693-2.188 2.877h-1.534c-.398-1.185-.791-2.297-2.183-2.875-1.419-.588-2.507-.045-3.579.488l-1.083-1.084c.557-1.118 1.066-2.18.487-3.58-.579-1.391-1.691-1.784-2.876-2.182v-1.533c1.185-.398 2.297-.791 2.875-2.184.578-1.394.068-2.459-.488-3.579l1.084-1.084c1.082.538 2.162 1.077 3.58.488 1.392-.577 1.785-1.69 2.183-2.875h1.534c.398 1.185.792 2.297 2.184 2.875 1.419.588 2.506.045 3.579-.488l1.084 1.084c-.556 1.121-1.065 2.187-.488 3.58.577 1.391 1.689 1.784 2.875 2.183v1.534c-1.188.398-2.302.791-2.877 2.183zm-7.125-5.951c1.654 0 3 1.346 3 3s-1.346 3-3 3-3-1.346-3-3 1.346-3 3-3zm0-2c-2.762 0-5 2.238-5 5s2.238 5 5 5 5-2.238 5-5-2.238-5-5-5z"/></svg></button>
                 <ul>
                     <li class="show-hidden-columns">Show hidden columns</li>
                 </ul>
             </div>
         `);
-        this.table.closest('.herotable-wrapper').append(control_elements);
+        this.table.closest('.outer-herotable-wrapper').append(control_elements);
 
         control_elements.find('button').on('click', function() {
             $(this).next('ul').toggle();
@@ -308,12 +371,18 @@ $.extend(Herotable.prototype, {
         let self = this;
         control_elements.find('.show-hidden-columns').on('click', function() {
             $(this).closest('ul').toggle();
+            const hidden_columns = self.hidden_columns;
             self.showHiddenColumns();
+
+            if(self.options.afterShowHiddenColsCallback) {
+                const data = {cols: hidden_columns};
+                self.options.afterShowHiddenColsCallback(data);
+            }
         });
     },
 
     removeTableControlBtn: function() {
-        this.table.closest('.herotable-wrapper').find('.control-layout').remove();
+        this.table.closest('.outer-herotable-wrapper').find('.control-layout').remove();
         this.hidden_columns = [];
     },
 
@@ -391,16 +460,18 @@ $.extend(Herotable.prototype, {
 
     initializeResizer: function(header_col_index, header_col, header_cols_length) {
         if(header_col_index < header_cols_length - 1) {
-            $(header_col).append(`<div class="col-resizer" style="height: ${this.table_height}px"></div>`);
+            const horizontal_style = this.options.isRTL? 'left: 0px' : 'right: 0px';
+            $(header_col).append(`<div class="col-resizer" style="height: ${this.table_height}px; ${horizontal_style};"></div>`);
         }
 
         let x = 0;
         let width = 0;
+        let document_width = $(document).width();
         let self = this;
         $(header_col).find('.col-resizer').on('mousedown', function(e) {
             if(self.active_resizer_col == null) {
                 self.active_resizer_col = $(this).parent();
-                x = e.clientX;
+                x = (self.options.isRTL)? document_width - e.clientX : e.clientX;
                 width = self.active_resizer_col.width();
                 
                 self.active_resizer_col.css({
@@ -416,7 +487,7 @@ $.extend(Herotable.prototype, {
                 footer_cols.css({'min-width': width, 'max-width': width, 'width': width});
                 
                 $(document).on('mousemove', function(e) {
-                    const newClientX = e.clientX;
+                    const newClientX = (self.options.isRTL)? document_width - e.clientX : e.clientX;
                     const new_width = width + newClientX - x;
 
                     self.active_resizer_col.css({'width': new_width, 'min-width': new_width, 'max-width': new_width});
