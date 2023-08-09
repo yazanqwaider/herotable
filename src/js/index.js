@@ -250,8 +250,11 @@ $.extend(Herotable.prototype, {
         header_hide_icon.on('click', () => {
             // check if there and body column in the same index is not valid,
             // such as it is colspan or it is not exist.
-            const invalid_col = this.body_rows_values.find((body_row) => {
+            let invalid_col = this.body_rows_values.find((body_row) => {
                 return header_col_index > body_row.cols.length - 1 || body_row.cols[header_col_index].is_colspan;
+            });
+            invalid_col = invalid_col || this.footer_rows_values.find((footer_row) => {
+                return header_col_index > footer_row.cols.length - 1 || footer_row.cols[header_col_index].is_colspan;
             });
 
             if(invalid_col) {
@@ -284,6 +287,7 @@ $.extend(Herotable.prototype, {
             if(this.options.afterHideCallback) {
                 const data = {
                     col_index: header_col_index,
+                    width: header_col.width(),
                 };
                 this.options.afterHideCallback(data);
             }
@@ -391,16 +395,18 @@ $.extend(Herotable.prototype, {
 
     initializeResizer: function(header_col_index, header_col, header_cols_length) {
         if(header_col_index < header_cols_length - 1) {
-            $(header_col).append(`<div class="col-resizer" style="height: ${this.table_height}px"></div>`);
+            const horizontal_style = this.options.isRTL? 'left: 0px' : 'right: 0px';
+            $(header_col).append(`<div class="col-resizer" style="height: ${this.table_height}px; ${horizontal_style};"></div>`);
         }
 
         let x = 0;
         let width = 0;
+        let document_width = $(document).width();
         let self = this;
         $(header_col).find('.col-resizer').on('mousedown', function(e) {
             if(self.active_resizer_col == null) {
                 self.active_resizer_col = $(this).parent();
-                x = e.clientX;
+                x = (self.options.isRTL)? document_width - e.clientX : e.clientX;
                 width = self.active_resizer_col.width();
                 
                 self.active_resizer_col.css({
@@ -416,7 +422,7 @@ $.extend(Herotable.prototype, {
                 footer_cols.css({'min-width': width, 'max-width': width, 'width': width});
                 
                 $(document).on('mousemove', function(e) {
-                    const newClientX = e.clientX;
+                    const newClientX = (self.options.isRTL)? document_width - e.clientX : e.clientX;
                     const new_width = width + newClientX - x;
 
                     self.active_resizer_col.css({'width': new_width, 'min-width': new_width, 'max-width': new_width});

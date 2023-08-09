@@ -1,4 +1,5 @@
 export const defaults = {
+    isRTL: false,
     scrollableWrapper: false,
     columnSearch: true,
     columnResizer: true,
