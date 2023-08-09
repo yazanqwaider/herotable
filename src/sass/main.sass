@@ -1,5 +1,43 @@
 .herotable
+    .outer-herotable-wrapper
+        position: relative
 
+        .control-layout
+            position: absolute
+            top: -13px
+            left: -13px
+            text-align: left
+
+            button
+                background: #ffffffa1
+                border: 1px solid #d7d7d7
+                border-radius: 13px
+                width: 30px
+                height: 30px
+                padding: 0px
+
+                &:hover
+                    cursor: pointer
+                    transform: scale(1.1)
+                    background: #fdfdfd
+
+            ul
+                background: white
+                border-radius: 7px
+                padding: 7px
+                box-shadow: 2px 2px 8px #e1e1e1
+                margin: 0px 10px
+                list-style: none
+                display: none
+
+                li
+                    padding: 5px
+
+                    &:hover
+                        cursor: pointer
+                        background: #fbfbfb
+
+    
     .herotable-wrapper
         position: relative
     
@@ -28,39 +66,6 @@
                 position: sticky
                 top: -1px
 
-        .control-layout
-            position: absolute
-            top: -13px
-            left: -13px
-
-            button
-                background: #ffffffa1
-                border: 1px solid #d7d7d7
-                border-radius: 13px
-                width: 27px
-                height: 27px
-                padding: 4px
-
-                &:hover
-                    cursor: pointer
-                    transform: scale(1.1)
-                    background: #fdfdfd
-
-            ul
-                background: white
-                border-radius: 7px
-                padding: 7px
-                box-shadow: 2px 2px 8px #e1e1e1
-                margin: 0px 10px
-                list-style: none
-                display: none
-
-                li
-                    padding: 5px
-
-                    &:hover
-                        cursor: pointer
-                        background: #fbfbfb
 
     table
         border: 1px solid #ededed
