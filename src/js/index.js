@@ -1,7 +1,7 @@
 import {defaults} from './defaults.js';
 
 let Herotable = function(element, mode = 'initialize', options) {
-    this.herotable = this;
+    element.herotable = this;
     this.table = $(element);
     this.header = this.table.find('thead');
     this.body = this.table.find('tbody');
@@ -15,8 +15,6 @@ let Herotable = function(element, mode = 'initialize', options) {
     this.options = {};
 
     $.extend(true, this.options, defaults, options);
-
-    this.table.data('herotable', this);
 
     if(mode == 'initialize') {
         this.init();
@@ -569,8 +567,6 @@ $.extend(Herotable.prototype, {
         this.table.closest('.herotable').find('.general-search-input').remove();
         this.table.unwrap().unwrap().unwrap();
 
-        this.table.removeData('herotable');
-
         let origin_thead = '';
         this.header_rows_values.forEach((header_row) => {
             origin_thead+= header_row.origin_html;
@@ -589,17 +585,18 @@ $.extend(Herotable.prototype, {
         });
         this.footer.html(origin_tfoot);
 
+        // to force remove the herotable elements from the table
         let remove_headers_stuff = '.header-search-input, .header-hide-icon, .header-sort-icon, .col-resizer';
         this.header.find(remove_headers_stuff).remove();
 
-        delete this.herotable;
+        delete this.table[0].herotable;
     }
 });
 
 $.fn.herotable = function(argument) {
     const mode = typeof argument == 'string'? argument : 'initialize';
-    const options = (typeof argument == 'object' || argument == undefined)? argument : {};
-
+    const options = (typeof argument == 'object' && argument != undefined)? argument : {};
+    
     return this.each(function() {
         if(mode == 'initialize' && this.herotable) return;
         let instance = new Herotable(this, mode, options);

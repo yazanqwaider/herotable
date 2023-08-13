@@ -74,9 +74,22 @@ $('table').herotable({
         hidden: [2, 3], // hide the third and fourth columns
     },
 });
+```
 
 If you would like to destroy the herotable :
 ```js
 let instance = $('table').herotable();
 instance[0].herotable.destroy();
+```
+
+Sometimes you would like to initialize the herotable in a global place, so you don't have the instance direcly, you can do this:
+```js
+$('#table-id').herotable(); // in a global place
+
+$('#table-id')[0].herotable.destroy();
+```
+
+And you can pass the **destroy** argument to herotable directly like this:
+```js
+$('#table-id').herotable('destroy');
 ```
