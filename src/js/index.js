@@ -1,6 +1,6 @@
 import {defaults} from './defaults.js';
 
-let Herotable = function(element, options) {
+let Herotable = function(element, mode = 'initialize', options) {
     this.herotable = this;
     this.table = $(element);
     this.header = this.table.find('thead');
@@ -16,7 +16,16 @@ let Herotable = function(element, options) {
 
     $.extend(true, this.options, defaults, options);
 
-    this.init();
+    this.table.data('herotable', this);
+
+    if(mode == 'initialize') {
+        this.init();
+    }
+
+    if(mode == 'destroy'){
+        this.getTableData();
+        this.destroy();
+    }
 }
 
 $.extend(Herotable.prototype, {
@@ -29,10 +38,7 @@ $.extend(Herotable.prototype, {
 
         this.initializeGeneralSearchInput();
 
-        this.table_height = this.table.outerHeight();
-        this.header_rows_values = this.getHeaderRowsValues();
-        this.body_rows_values = this.getBodyRowsValues();
-        this.footer_rows_values = this.getFooterRowsValues();
+        this.getTableData();
 
         this.applyRequiredStylesOnColumns();
 
@@ -61,6 +67,13 @@ $.extend(Herotable.prototype, {
 
         this.showNoDataRowIfNoData();
         this.hideFooterIfBodyEmpty();
+    },
+
+    getTableData: function() {
+        this.table_height = this.table.outerHeight();
+        this.header_rows_values = this.getHeaderRowsValues();
+        this.body_rows_values = this.getBodyRowsValues();
+        this.footer_rows_values = this.getFooterRowsValues();
     },
 
     getHeaderRowsValues: function() {
@@ -554,28 +567,41 @@ $.extend(Herotable.prototype, {
     
     destroy: function() {
         this.table.closest('.herotable').find('.general-search-input').remove();
-        this.table.unwrap().unwrap();
+        this.table.unwrap().unwrap().unwrap();
 
-        let origin_header = '';
+        this.table.removeData('herotable');
+
+        let origin_thead = '';
         this.header_rows_values.forEach((header_row) => {
-            origin_header+= header_row.origin_html;
+            origin_thead+= header_row.origin_html;
         });
-        this.table.find('thead').html(origin_header);
+        this.header.html(origin_thead);
 
-
-        let origin_body = '';
+        let origin_tbody = '';
         this.body_rows_values.forEach((body_row) => {
-            origin_body+= body_row.origin_html;
+            origin_tbody+= body_row.origin_html;
         });
-        this.body.html(origin_body);
+        this.body.html(origin_tbody);
+
+        let origin_tfoot = '';
+        this.footer_rows_values.forEach((footer_row) => {
+            origin_tfoot+= footer_row.origin_html;
+        });
+        this.footer.html(origin_tfoot);
+
+        let remove_headers_stuff = '.header-search-input, .header-hide-icon, .header-sort-icon, .col-resizer';
+        this.header.find(remove_headers_stuff).remove();
+
+        delete this.herotable;
     }
 });
 
-$.fn.herotable = function(options) {
+$.fn.herotable = function(argument) {
+    const mode = typeof argument == 'string'? argument : 'initialize';
+    const options = (typeof argument == 'object' || argument == undefined)? argument : {};
+
     return this.each(function() {
-        if(this.herotable) return;
-        
-        let instance = new Herotable(this, options);
-        $.extend(this, instance);
+        if(mode == 'initialize' && this.herotable) return;
+        let instance = new Herotable(this, mode, options);
     });
 };
