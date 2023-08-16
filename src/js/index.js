@@ -551,7 +551,7 @@ $.extend(Herotable.prototype, {
                 ((this.body.find('tr').length == 0 && !this.options.noAvailableData) || 
                 (this.body.find('tr').length == 1 && this.body.find('tr').attr('data-rowtype') == 'empty-msg-row'));
 
-            const display = (hide_footer)? 'none' : 'block';
+            const display = (hide_footer)? 'none' : 'table-footer-group';
             this.footer.css('display', display);
         }
     },
