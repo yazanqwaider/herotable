@@ -565,6 +565,7 @@ $.extend(Herotable.prototype, {
     
     destroy: function() {
         this.table.closest('.herotable').find('.general-search-input').remove();
+        this.table.closest('.herotable').find('.control-layout').remove();
         this.table.unwrap().unwrap().unwrap();
 
         let origin_thead = '';
