@@ -250,7 +250,7 @@ $.extend(Herotable.prototype, {
 
         general_input.on('keyup search', (e) => {
             const value = e.target.value;
-            let valid_rows = '';
+            let valid_rows = [];
 
             if(value) {
                 for (let i = 0; i < this.body_rows_values.length; i++) {
@@ -259,7 +259,7 @@ $.extend(Herotable.prototype, {
                         const col_value = row_cols[col_index].value;
 
                         if(col_value.includes(value)) {
-                            valid_rows+= this.body_rows_values[i].html;
+                            valid_rows.push(this.body_rows_values[i].el[0]);
                             break;
                         }
                     }
@@ -267,11 +267,13 @@ $.extend(Herotable.prototype, {
             }
             else {
                 for (let i = 0; i < this.body_rows_values.length; i++) {
-                    valid_rows+= this.body_rows_values[i].html;
+                    valid_rows.push(this.body_rows_values[i].el[0]);
                 }			
             }
 
-            this.body.html(valid_rows);
+            this.body.children().detach();
+            this.body.html($(valid_rows));
+
             this.recalculateResizerHeight();
             this.showNoDataRowIfNoData();
             this.hideFooterIfBodyEmpty();
@@ -286,25 +288,27 @@ $.extend(Herotable.prototype, {
         const header_search_input = header_col.find('.header-search-input');
         header_search_input.on('keyup search', (e) => {
             const value = e.target.value;
-            let valid_rows = '';
+            let valid_rows = [];
 
             if(value) {
                 for (let i = 0; i < this.body_rows_values.length; i++) {
                     if(header_col_index <= this.body_rows_values[i].cols.length - 1) {
                         const col_value = this.body_rows_values[i].cols[header_col_index].value;
                         if(col_value.includes(value)) {
-                            valid_rows+= this.body_rows_values[i].html;
+                            valid_rows.push(this.body_rows_values[i].el[0]);
                         }
                     }
                 }
             }
             else {
                 for (let i = 0; i < this.body_rows_values.length; i++) {
-                    valid_rows+= this.body_rows_values[i].html;
+                    valid_rows.push(this.body_rows_values[i].el[0]);
                 }			
             }
 
-            this.table.find('tbody').html(valid_rows);
+            this.body.children().detach();
+            this.body.html($(valid_rows));
+
             this.recalculateResizerHeight();
             this.showNoDataRowIfNoData();
             this.hideFooterIfBodyEmpty();
