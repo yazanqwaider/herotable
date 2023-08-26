@@ -76,6 +76,13 @@ $('table').herotable({
 });
 ```
 
+For a **scrollableWrapper** optionm you can determine the max height of the wrapper in your css :
+```css
+.scrollable-herotable-wrapper {
+    max-height: 350px !important;  /* default is 50vh */
+}
+```
+
 If you would like to destroy the herotable :
 ```js
 let instance = $('table').herotable();

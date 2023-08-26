@@ -104,6 +104,7 @@ $.extend(Herotable.prototype, {
         let body_rows_values = [];
         this.body.find('tr').each((row_index, row) => {
             let body_row = {
+                el: $(row),
                 origin_html: row.outerHTML,
                 html: row.outerHTML,
                 cols: [],
@@ -446,27 +447,39 @@ $.extend(Herotable.prototype, {
             let new_sort_by = (old_sort_by == 'asc')? 'desc' : 'asc';
             self.header_rows_values[0].cols[header_col_index].sort_by = new_sort_by;
             $(this).html(sorting_icons_map[new_sort_by]);
+            const parentNode = self.body[0];
 
             self.body_rows_values.sort(function(first, second) {
                 if(header_col_index <= first.cols.length - 1 && header_col_index <= second.cols.length - 1) {
                     const first_value = first.cols[header_col_index].value;
                     const second_value = second.cols[header_col_index].value;
-    
+                    let result = first_value.localeCompare(second_value);
+                    result = (new_sort_by == 'desc')? result * -1 : result;
+
                     if(new_sort_by == 'asc') {
-                        return first_value.localeCompare(second_value);
+                        if(result == -1) {
+                            parentNode.insertBefore(first.el[0], second.el[0]);
+                        }
+                        if(result == 1) {
+                            parentNode.insertBefore(second.el[0], first.el[0]);
+                        }
                     }
-                    return second_value.localeCompare(first_value);
+                    else {
+                        if(result == 1) {
+                            parentNode.insertBefore(second.el[0], first.el[0]);
+                        }
+                        if(result == -1) {
+                            parentNode.insertBefore(first.el[0], second.el[0]);
+                        }
+                    }
+
+                    return result;
                 }
                 else {
                     console.error("The row has incorrect columns count.");
                     return -1;
                 }
             });
-
-            let sorted_rows = '';
-            self.body_rows_values.forEach((row_values, index) => sorted_rows+= row_values.html);
-
-            self.table.find('tbody').html(sorted_rows);
         });
     },
 
