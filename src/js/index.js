@@ -115,6 +115,7 @@ $.extend(Herotable.prototype, {
                 
                 for (let i = 0; i < colspan; i++) {
                     body_row.cols.push({
+                        el: $(col),
                         origin_html: col.outerHTML,
                         html: col.outerHTML,
                         value: $(col).text(),
@@ -342,10 +343,11 @@ $.extend(Herotable.prototype, {
             header_col.hide();
             this.header_rows_values[0].cols[header_col_index].is_hidden = true;
 
-            // hide the column in body side
+            // hide the columns in body side
             this.body_rows_values.forEach((body_row, body_row_index) => {
                 this.body.find(`tr:eq(${body_row_index}) td:eq(${header_col_index})`).hide();
                 body_row.cols[header_col_index].is_hidden = true;
+                body_row.cols[header_col_index].el[0].style.display = 'none';
             });
 
             // hide the column in footer side
