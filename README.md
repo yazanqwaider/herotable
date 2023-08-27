@@ -48,7 +48,7 @@ $('table').herotable({
 |afterHideCallback   | You can call your callback function after column hiding, function (default: null)|
 |afterShowHiddenColsCallback| You can call your callback function after show the hidden columns, function (default: null)|
 |hideFooterIfBodyEmpty| You can hide the footer when you search on something and the no results, Boolean (default: true)|
-|columns             | From `columns` option you can edit on column width ot hide column from begining, Object (default: {sizes: {}, hidden: []})|
+|columns             | From `columns` option you can edit the column width and column visibility at the  begining, Object (default: {sizes: {}, hidden: []})|
 |lang                | Change the default text on elements, like (generalSearch, noAvailableData, showHiddenColumn)|
 
 

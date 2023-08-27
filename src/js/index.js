@@ -74,6 +74,7 @@ $.extend(Herotable.prototype, {
         this.footer_rows_values = this.getFooterRowsValues();
     },
 
+    // Get the header rows data to make easy to deal with
     getHeaderRowsValues: function() {
         let header_rows_values = [];
         const header_rows = this.header.find('tr');
@@ -100,6 +101,7 @@ $.extend(Herotable.prototype, {
         return header_rows_values;
     },
 
+    // Get the body rows data to make easy to deal with
     getBodyRowsValues: function() {
         let body_rows_values = [];
         this.body.find('tr').each((row_index, row) => {
@@ -132,6 +134,7 @@ $.extend(Herotable.prototype, {
         return body_rows_values;
     },
 
+    // Get the footer rows data to make easy to deal with
     getFooterRowsValues: function() {
         let footer_rows_values = [];
         this.footer.find('tr').each((row_index, row) => {
@@ -162,6 +165,7 @@ $.extend(Herotable.prototype, {
         return footer_rows_values;
     },
     
+    // Apply the gived styles through options on columns
     applyRequiredStylesOnColumns: function() {
         const columns_styles = this.options.columns;
 
@@ -213,6 +217,7 @@ $.extend(Herotable.prototype, {
         }
     },
 
+    // Make the header rows html in a variable is the same in DOM
     updateNewHtmlForHeaderRows() {
         this.header.find('tr').each((row_index, row) => {
             this.header_rows_values[row_index].html = $(row)[0].outerHTML;
@@ -223,6 +228,7 @@ $.extend(Herotable.prototype, {
         });
     },
 
+    // Make the body rows html in a variable is the same in DOM
     updateNewHtmlForBodyRows: function() {
         this.body.find('tr').each((row_index, row) => {
             this.body_rows_values[row_index].html = row.outerHTML,
@@ -235,6 +241,7 @@ $.extend(Herotable.prototype, {
         });
     },
 
+    // Make the footer rows html in a variable is the same in DOM
     updateNewHtmlForFooterRows: function() {
         this.footer.find('tr').each((row_index, row) => {
             this.footer_rows_values[row_index].html = row.outerHTML,
@@ -281,6 +288,7 @@ $.extend(Herotable.prototype, {
         });
     },
   
+    // Initialize the search input on columns
     initializeSearchInput: function(header_col_index, header_col) {
         header_col = $(header_col);
         header_col.append('<input type="search" class="header-search-input">');
@@ -316,6 +324,7 @@ $.extend(Herotable.prototype, {
         });
     },
 
+    // Initialize the hide button on each column in table header
     initializeHideBtn: function(header_col_index, header_col) {
         header_col = $(header_col);
 
@@ -372,6 +381,7 @@ $.extend(Herotable.prototype, {
         });
     },
 
+    // Show the control button that includs operations for hide and resize features
     showTableControlBtn: function() {
         const control_elements = $(`
             <div class="control-layout">
@@ -429,6 +439,7 @@ $.extend(Herotable.prototype, {
         this.removeTableControlBtn();
     },
 
+    // Initialize the sorting feature on each column in table header
     initializeSortBtn: function(header_col_index, header_col) {
         header_col = $(header_col);
 
@@ -489,6 +500,7 @@ $.extend(Herotable.prototype, {
         });
     },
 
+    // Initialize the resizing feature on each column in table header except the last one
     initializeResizer: function(header_col_index, header_col, header_cols_length) {
         if(header_col_index < header_cols_length - 1) {
             const horizontal_style = this.options.isRTL? 'left: 0px' : 'right: 0px';
@@ -551,6 +563,7 @@ $.extend(Herotable.prototype, {
         });
     },
 
+    // Show the (no data row) when there is not rows in table body
     showNoDataRowIfNoData: function() {
         if(this.body.find('tr').length == 0 && this.options.noAvailableData) {
             const no_available_data_row = $(
