@@ -11,7 +11,7 @@ export const defaults = {
     hideFooterIfBodyEmpty: true,
     enableSumValuesOnColumns: [],
     sumValuesCell: 'td',    // in tfoot
-    decimalNnumberLength: '0',
+    decimalNumberLength: 0,
     columns: {
         sizes: {},
         hidden: [],

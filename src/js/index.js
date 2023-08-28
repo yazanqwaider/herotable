@@ -610,7 +610,7 @@ $.extend(Herotable.prototype, {
     
     applySumOnColumns() {
         const sumValuesCell = this.sumValuesCell || 'td';
-        const decimalNnumberLength = parseInt(this.options.decimalNnumberLength || 0);
+        const decimalNumberLength = parseInt(this.options.decimalNumberLength || 0);
 
         this.header_rows_values[0].cols.forEach((col, index) => {
             if(this.options.enableSumValuesOnColumns.includes(index)) {
@@ -618,10 +618,10 @@ $.extend(Herotable.prototype, {
                 const point_index = sum_col_value.indexOf('.');
 
                 if(point_index == -1) {
-                    sum_col_value = parseFloat(sum_col_value).toFixed(decimalNnumberLength);
+                    sum_col_value = parseFloat(sum_col_value).toFixed(decimalNumberLength);
                 }
                 else {
-                    sum_col_value = sum_col_value.slice(0, point_index + decimalNnumberLength + 1);
+                    sum_col_value = sum_col_value.slice(0, point_index + decimalNumberLength + 1);
                 }
            
                 if(sumValuesCell == 'td') {

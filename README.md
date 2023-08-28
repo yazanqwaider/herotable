@@ -49,6 +49,9 @@ $('table').herotable({
 |afterShowHiddenColsCallback| You can call your callback function after show the hidden columns, function (default: null)|
 |hideFooterIfBodyEmpty| You can hide the footer when you search on something and the no results, Boolean (default: true)|
 |columns             | From `columns` option you can edit the column width and column visibility at the  begining, Object (default: {sizes: {}, hidden: []})|
+|enableSumValuesOnColumns | You can enable sum values on columns and put the summation in footer, Array(default: [])|
+|sumValuesCell | When you enable the summation on column, the summation will be displayed in ```td``` tag in the same index in footer, but you can determine nested element inside td, string (default: 'td')|
+|decimalNumberLength| If you enabled the summation on columns, you can make the summation with decimal like: 50.016 through define the length, Number(default: 0)|
 |lang                | Change the default text on elements, like (generalSearch, noAvailableData, showHiddenColumn)|
 
 
