@@ -9,6 +9,9 @@ export const defaults = {
     afterShowHiddenColsCallback: null,
     noAvailableData: true,
     hideFooterIfBodyEmpty: true,
+    enableSumValuesOnColumns: [],
+    sumValuesCell: 'td',    // in tfoot
+    decimalNnumberLength: '0',
     columns: {
         sizes: {},
         hidden: [],

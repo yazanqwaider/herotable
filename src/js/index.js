@@ -65,6 +65,10 @@ $.extend(Herotable.prototype, {
 
         this.showNoDataRowIfNoData();
         this.hideFooterIfBodyEmpty();
+
+        if(this.footer_rows_values.length > 0) {
+            this.applySumOnColumns();
+        }
     },
 
     getTableData: function() {
@@ -149,6 +153,7 @@ $.extend(Herotable.prototype, {
                 
                 for (let i = 0; i < colspan; i++) {
                     footer_row.cols.push({
+                        el: $(col),
                         origin_html: col.outerHTML,
                         html: col.outerHTML,
                         value: $(col).text(),
@@ -285,6 +290,10 @@ $.extend(Herotable.prototype, {
             this.recalculateResizerHeight();
             this.showNoDataRowIfNoData();
             this.hideFooterIfBodyEmpty();
+
+            if(this.footer_rows_values.length > 0) {
+                this.applySumOnColumns();
+            }
         });
     },
   
@@ -321,6 +330,10 @@ $.extend(Herotable.prototype, {
             this.recalculateResizerHeight();
             this.showNoDataRowIfNoData();
             this.hideFooterIfBodyEmpty();
+
+            if(this.footer_rows_values.length > 0) {
+                this.applySumOnColumns();
+            }
         });
     },
 
@@ -595,6 +608,47 @@ $.extend(Herotable.prototype, {
         });
     },
     
+    applySumOnColumns() {
+        const sumValuesCell = this.sumValuesCell || 'td';
+        const decimalNnumberLength = parseInt(this.options.decimalNnumberLength || 0);
+
+        this.header_rows_values[0].cols.forEach((col, index) => {
+            if(this.options.enableSumValuesOnColumns.includes(index)) {
+                let sum_col_value = parseFloat(this.sumColumnValues(index)).toString();
+                const point_index = sum_col_value.indexOf('.');
+
+                if(point_index == -1) {
+                    sum_col_value = parseFloat(sum_col_value).toFixed(decimalNnumberLength);
+                }
+                else {
+                    sum_col_value = sum_col_value.slice(0, point_index + decimalNnumberLength + 1);
+                }
+           
+                if(sumValuesCell == 'td') {
+                    this.footer_rows_values[0].cols[index].el[0].innerText = sum_col_value;
+                }
+                else {
+                    this.footer_rows_values[0].cols[index].el[0].querySelector(sumValuesCell).innerText = sum_col_value;
+                }
+            }
+        });
+    },
+
+    sumColumnValues(header_col_index) {
+        const sum_col_values = this.body_rows_values.reduce((summation, row) => {
+            if(row.el[0].isConnected) {
+                const col = row.cols[header_col_index];
+                if(!col.is_hidden && !isNaN(col.value)) {
+                    summation+= parseFloat(col.value);
+                }
+            }
+    
+            return summation;
+        }, 0);
+
+        return sum_col_values;
+    },
+
     destroy: function() {
         this.table.closest('.herotable').find('.general-search-input').remove();
         this.table.closest('.herotable').find('.control-layout').remove();
