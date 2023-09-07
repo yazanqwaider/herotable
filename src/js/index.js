@@ -615,6 +615,7 @@ $.extend(Herotable.prototype, {
         this.header_rows_values[0].cols.forEach((col, index) => {
             if(this.options.enableSumValuesOnColumns.includes(index)) {
                 let sum_col_value = parseFloat(this.sumColumnValues(index)).toString();
+
                 const point_index = sum_col_value.indexOf('.');
 
                 if(point_index == -1) {
@@ -638,8 +639,13 @@ $.extend(Herotable.prototype, {
         const sum_col_values = this.body_rows_values.reduce((summation, row) => {
             if(row.el[0].isConnected) {
                 const col = row.cols[header_col_index];
-                if(!col.is_hidden && !isNaN(col.value)) {
-                    summation+= parseFloat(col.value);
+                if(!col.is_hidden) {
+                    if(typeof(col.value) == 'string' || typeof(col.value) == 'number') {
+                        const value = (col.value + '').replaceAll(',', '');
+                        if(value && !isNaN(value)) {
+                            summation+= parseFloat(value);
+                        }
+                    }
                 }
             }
     
