@@ -615,14 +615,18 @@ $.extend(Herotable.prototype, {
         this.header_rows_values[0].cols.forEach((col, index) => {
             if(this.options.enableSumValuesOnColumns.includes(index)) {
                 let sum_col_value = parseFloat(this.sumColumnValues(index)).toString();
-
                 const point_index = sum_col_value.indexOf('.');
 
                 if(point_index == -1) {
                     sum_col_value = parseFloat(sum_col_value).toFixed(decimalNumberLength);
                 }
                 else {
-                    sum_col_value = sum_col_value.slice(0, point_index + decimalNumberLength + 1);
+                    if(decimalNumberLength > 0) {
+                        sum_col_value = sum_col_value.slice(0, point_index + decimalNumberLength + 1);
+                    }
+                    else {
+                        sum_col_value = sum_col_value.slice(0, point_index);
+                    }
                 }
            
                 if(sumValuesCell == 'td') {
