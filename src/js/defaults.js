@@ -12,6 +12,8 @@ export const defaults = {
     enableSumValuesOnColumns: [],
     sumValuesCell: 'td',    // in tfoot
     decimalNumberLength: 0,
+    withPagination: false,
+    rowsPerPage: 15,
     columns: {
         sizes: {},
         hidden: [],
@@ -20,5 +22,7 @@ export const defaults = {
         generalSearch: "Search",
         noAvailableData: "No available data in table",
         showHiddenColumn: "Show hidden columns",
+        nextPaginateBtn: "Next",
+        prevPaginateBtn: "Previous",
     }
 }

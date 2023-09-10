@@ -52,7 +52,9 @@ $('table').herotable({
 |enableSumValuesOnColumns | You can enable sum values on columns and put the summation in footer, Array(default: [])|
 |sumValuesCell | When you enable the summation on column, the summation will be displayed in ```td``` tag in the same index in footer, but you can determine nested element inside td, string (default: 'td')|
 |decimalNumberLength| If you enabled the summation on columns, you can make the summation with decimal like: 50.016 through define the length, Number(default: 0)|
-|lang                | Change the default text on elements, like (generalSearch, noAvailableData, showHiddenColumn)|
+|withPagination | For enable the pagination feature, you must make the value is true, Boolean(default: false)|
+|rowsPerPage | If you enabled the pagination feature, you maybe would like to change the rows count per page, Number(default: 15)|
+|lang                | Change the default text on elements, like (generalSearch, noAvailableData, showHiddenColumn, nextPaginateBtn, prevPaginateBtn)|
 
 
 Example:

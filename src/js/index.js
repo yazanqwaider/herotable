@@ -11,6 +11,9 @@ let Herotable = function(element, mode = 'initialize', options) {
     this.footer_rows_values  = [];
     this.table_height = null;
     this.active_resizer_col = null;
+    this.active_page = 0;
+    this.pages_count = 1;
+    this.page_body_rows = [];
     this.hidden_columns = [];
     this.options = {};
 
@@ -38,7 +41,11 @@ $.extend(Herotable.prototype, {
 
         this.getTableData();
 
+        this.refreshTheBody();
+
         this.applyRequiredStylesOnColumns();
+
+        this.applyPagination();
 
         if(this.header && this.header_rows_values.length > 0) {          
             const header_row_cols = this.header.find('tr').first().find('th');
@@ -75,6 +82,7 @@ $.extend(Herotable.prototype, {
         this.table_height = this.table.outerHeight();
         this.header_rows_values = this.getHeaderRowsValues();
         this.body_rows_values = this.getBodyRowsValues();
+        this.page_body_rows = this.getPageBodyRows();
         this.footer_rows_values = this.getFooterRowsValues();
     },
 
@@ -138,6 +146,32 @@ $.extend(Herotable.prototype, {
         return body_rows_values;
     },
 
+    // Get the body rows data for the active page to make easy to deal with
+    getPageBodyRows: function() {        
+        const start_row_index = (this.options.withPagination)? +this.active_page * (this.options.rowsPerPage || 15) : 0;
+        const end_row_index = ((this.options.withPagination)? (+this.active_page + 1) * (this.options.rowsPerPage || 15) : this.body_rows_values.length) - 1;
+        
+        let page_body_rows = [];
+        for (let i = start_row_index; i <= end_row_index; i++) {
+            if(i < this.body_rows_values.length) {
+                page_body_rows.push(this.body_rows_values[i]);
+            }
+        }
+
+        return page_body_rows;
+    },
+
+    // Refresh the body rows through remove the exist rows and add the page_body_rows.
+    refreshTheBody: function() {
+        let body_rows = [];
+        for (let i = 0; i < this.page_body_rows.length; i++) {
+            body_rows.push(this.page_body_rows[i].el[0]);
+        }
+
+        this.body.children().detach();
+        this.body.html($(body_rows));
+    },
+
     // Get the footer rows data to make easy to deal with
     getFooterRowsValues: function() {
         let footer_rows_values = [];
@@ -194,7 +228,7 @@ $.extend(Herotable.prototype, {
                 }
 
                 if(columns_styles.hidden.includes(col_index)) {
-                    this.body_rows_values[row_index].cols[col_index].is_hidden = true;
+                    this.page_body_rows[row_index].cols[col_index].is_hidden = true;
                     $(col).css('display', 'none');
                 }
             });
@@ -222,6 +256,74 @@ $.extend(Herotable.prototype, {
         }
     },
 
+    // Apply the pagination feature if it enabled in options
+    applyPagination: function() {
+        if(this.options.withPagination) {
+            const rowsPerPage = this.options.rowsPerPage || 15;
+            this.pages_count = Math.ceil(this.body_rows_values.length / rowsPerPage);
+
+            let pagesHtmlElements = '<div class="pagination-layout">';
+            pagesHtmlElements+= `
+                <button class="prev-paginate-btn disabled-btn" tabindex="0" disabled>
+                    ${this.options.lang.prevPaginateBtn}
+                </button>
+            `;
+
+            for (let pageIndex = 0; pageIndex < this.pages_count; pageIndex++) {
+                pagesHtmlElements+= `
+                    <button class="paginate-btn ${(pageIndex == 0? 'active-paginate-btn' : '')}" tabindex="0" data-pageIndex="${pageIndex}">
+                        ${pageIndex + 1}
+                    </button>
+                `;
+            }
+
+            pagesHtmlElements+= `
+                <button class="next-paginate-btn" tabindex="0">
+                    ${this.options.lang.nextPaginateBtn}
+                </button>
+            `;
+            pagesHtmlElements+= '</div>';
+
+            $('.herotable').append(pagesHtmlElements);
+
+            let self = this;
+            $('.herotable .paginate-btn').on('click', function() {
+                const page_index = $(this).attr('data-pageIndex');
+                self.activatePage(page_index);
+            });
+
+            $('.herotable .prev-paginate-btn').on('click', function() {
+                const page_index = +self.active_page - 1;
+                self.activatePage(page_index);
+            });
+
+            $('.herotable .next-paginate-btn').on('click', function() {
+                const page_index = +self.active_page + 1;
+                self.activatePage(page_index);
+            });
+        }
+    },
+
+    // Make a specific page is active
+    activatePage(page_index) {
+        if(page_index >= 0 && page_index < this.pages_count) {
+            this.table.closest('.herotable').find('.active-paginate-btn').removeClass('active-paginate-btn');
+            this.table.closest('.herotable').find(`.paginate-btn[data-pageIndex="${page_index}"]`).addClass('active-paginate-btn');
+            this.active_page = page_index;
+            this.page_body_rows = this.getPageBodyRows();
+            this.refreshTheBody();
+
+            if(page_index == 0) {
+                this.table.closest('.herotable').find('.next-paginate-btn').removeClass('disabled-btn').prop('disabled', false);
+                this.table.closest('.herotable').find(`.prev-paginate-btn`).addClass('disabled-btn').prop('disabled');
+            }
+            else if(page_index == this.pages_count - 1) {
+                this.table.closest('.herotable').find(`.prev-paginate-btn`).removeClass('disabled-btn').prop('disabled', false);
+                this.table.closest('.herotable').find(`.next-paginate-btn`).addClass('disabled-btn').prop('disabled');
+            }
+        }
+    },
+
     // Make the header rows html in a variable is the same in DOM
     updateNewHtmlForHeaderRows() {
         this.header.find('tr').each((row_index, row) => {
@@ -236,11 +338,11 @@ $.extend(Herotable.prototype, {
     // Make the body rows html in a variable is the same in DOM
     updateNewHtmlForBodyRows: function() {
         this.body.find('tr').each((row_index, row) => {
-            this.body_rows_values[row_index].html = row.outerHTML,
+            this.page_body_rows[row_index].html = row.outerHTML,
 
             $(row).find('td').each((col_index, col) => {
-                if(col_index < this.body_rows_values[row_index].cols.length) {
-                    this.body_rows_values[row_index].cols[col_index].html = col.outerHTML;
+                if(col_index < this.page_body_rows[row_index].cols.length) {
+                    this.page_body_rows[row_index].cols[col_index].html = col.outerHTML;
                 }
             });
         });
@@ -266,21 +368,21 @@ $.extend(Herotable.prototype, {
             let valid_rows = [];
 
             if(value) {
-                for (let i = 0; i < this.body_rows_values.length; i++) {
-                    const row_cols = this.body_rows_values[i].cols;
+                for (let i = 0; i < this.page_body_rows.length; i++) {
+                    const row_cols = this.page_body_rows[i].cols;
                     for (let col_index = 0; col_index < row_cols.length; col_index++) {
                         const col_value = row_cols[col_index].value;
 
                         if(col_value.includes(value)) {
-                            valid_rows.push(this.body_rows_values[i].el[0]);
+                            valid_rows.push(this.page_body_rows[i].el[0]);
                             break;
                         }
                     }
                 }
             }
             else {
-                for (let i = 0; i < this.body_rows_values.length; i++) {
-                    valid_rows.push(this.body_rows_values[i].el[0]);
+                for (let i = 0; i < this.page_body_rows.length; i++) {
+                    valid_rows.push(this.page_body_rows[i].el[0]);
                 }			
             }
 
@@ -309,18 +411,18 @@ $.extend(Herotable.prototype, {
             let valid_rows = [];
 
             if(value) {
-                for (let i = 0; i < this.body_rows_values.length; i++) {
-                    if(header_col_index <= this.body_rows_values[i].cols.length - 1) {
-                        const col_value = this.body_rows_values[i].cols[header_col_index].value;
+                for (let i = 0; i < this.page_body_rows.length; i++) {
+                    if(header_col_index <= this.page_body_rows[i].cols.length - 1) {
+                        const col_value = this.page_body_rows[i].cols[header_col_index].value;
                         if(col_value.includes(value)) {
-                            valid_rows.push(this.body_rows_values[i].el[0]);
+                            valid_rows.push(this.page_body_rows[i].el[0]);
                         }
                     }
                 }
             }
             else {
-                for (let i = 0; i < this.body_rows_values.length; i++) {
-                    valid_rows.push(this.body_rows_values[i].el[0]);
+                for (let i = 0; i < this.page_body_rows.length; i++) {
+                    valid_rows.push(this.page_body_rows[i].el[0]);
                 }			
             }
 
@@ -349,7 +451,7 @@ $.extend(Herotable.prototype, {
         header_hide_icon.on('click', () => {
             // check if there and body column in the same index is not valid,
             // such as it is colspan or it is not exist.
-            let invalid_col = this.body_rows_values.find((body_row) => {
+            let invalid_col = this.page_body_rows.find((body_row) => {
                 return header_col_index > body_row.cols.length - 1 || body_row.cols[header_col_index].is_colspan;
             });
             invalid_col = invalid_col || this.footer_rows_values.find((footer_row) => {
@@ -366,7 +468,7 @@ $.extend(Herotable.prototype, {
             this.header_rows_values[0].cols[header_col_index].is_hidden = true;
 
             // hide the columns in body side
-            this.body_rows_values.forEach((body_row, body_row_index) => {
+            this.page_body_rows.forEach((body_row, body_row_index) => {
                 this.body.find(`tr:eq(${body_row_index}) td:eq(${header_col_index})`).hide();
                 body_row.cols[header_col_index].is_hidden = true;
                 body_row.cols[header_col_index].el[0].style.display = 'none';
@@ -437,7 +539,7 @@ $.extend(Herotable.prototype, {
             this.header_rows_values[0].cols[header_col_index].is_hidden = false;
     
             // show the column in body side
-            this.body_rows_values.forEach((body_row, body_row_index) => {
+            this.page_body_rows.forEach((body_row, body_row_index) => {
                 this.body.find(`tr:eq(${body_row_index}) td:eq(${header_col_index})`).show();
                 body_row.cols[header_col_index].is_hidden = false;
             });
@@ -479,7 +581,7 @@ $.extend(Herotable.prototype, {
             $(this).html(sorting_icons_map[new_sort_by]);
             const parentNode = self.body[0];
 
-            self.body_rows_values.sort(function(first, second) {
+            self.page_body_rows.sort(function(first, second) {
                 if(header_col_index <= first.cols.length - 1 && header_col_index <= second.cols.length - 1) {
                     const first_value = first.cols[header_col_index].value;
                     const second_value = second.cols[header_col_index].value;
@@ -640,7 +742,7 @@ $.extend(Herotable.prototype, {
     },
 
     sumColumnValues(header_col_index) {
-        const sum_col_values = this.body_rows_values.reduce((summation, row) => {
+        const sum_col_values = this.page_body_rows.reduce((summation, row) => {
             if(row.el[0].isConnected) {
                 const col = row.cols[header_col_index];
                 if(!col.is_hidden) {
