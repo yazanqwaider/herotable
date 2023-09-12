@@ -1,6 +1,12 @@
 # Herotable
 Herotable is a plug-in for the jQuery Javascript library, to make your tables have the ability to filter, sort and hide and a lot of another features.
 
+[Demo](https://yazanqwaider.github.io/herotable/)
+
+
+![Herotable Screenshot](https://yazanqwaider.github.io/herotable/screenshot.png)
+
+
 ### Installing
 
 ```shell
