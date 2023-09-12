@@ -288,17 +288,17 @@ $.extend(Herotable.prototype, {
 
             let self = this;
             $('.herotable .paginate-btn').on('click', function() {
-                const page_index = $(this).attr('data-pageIndex');
-                self.activatePage(page_index);
+                const page_index = parseInt($(this).attr('data-pageIndex'));
+                self.activatePage(parseInt(page_index));
             });
 
             $('.herotable .prev-paginate-btn').on('click', function() {
-                const page_index = +self.active_page - 1;
+                const page_index = parseInt(self.active_page) - 1;
                 self.activatePage(page_index);
             });
 
             $('.herotable .next-paginate-btn').on('click', function() {
-                const page_index = +self.active_page + 1;
+                const page_index = parseInt(self.active_page) + 1;
                 self.activatePage(page_index);
             });
         }
@@ -313,13 +313,23 @@ $.extend(Herotable.prototype, {
             this.page_body_rows = this.getPageBodyRows();
             this.refreshTheBody();
 
-            if(page_index == 0) {
-                this.table.closest('.herotable').find('.next-paginate-btn').removeClass('disabled-btn').prop('disabled', false);
-                this.table.closest('.herotable').find(`.prev-paginate-btn`).addClass('disabled-btn').prop('disabled');
+            const next_btn = this.table.closest('.herotable').find('.next-paginate-btn');
+            const prev_btn = this.table.closest('.herotable').find('.prev-paginate-btn');
+            const can_next = this.pages_count > 1 && page_index + 1 < this.pages_count;
+            const can_prev = this.pages_count > 1 && page_index > 0;
+
+            if(can_next) {
+                next_btn.removeClass('disabled-btn').prop('disabled', false);
             }
-            else if(page_index == this.pages_count - 1) {
-                this.table.closest('.herotable').find(`.prev-paginate-btn`).removeClass('disabled-btn').prop('disabled', false);
-                this.table.closest('.herotable').find(`.next-paginate-btn`).addClass('disabled-btn').prop('disabled');
+            else {
+                next_btn.addClass('disabled-btn').prop('disabled');
+            }
+
+            if(can_prev) {
+                prev_btn.removeClass('disabled-btn').prop('disabled', false);
+            }
+            else {
+                prev_btn.addClass('disabled-btn').prop('disabled');
             }
         }
     },
