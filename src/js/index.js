@@ -495,6 +495,9 @@ $.extend(Herotable.prototype, {
             if(this.hidden_columns.length == 1) {
                 this.showTableControlBtn();
             }
+            else {
+                this.refreshHiddenColumnsListInControlIfExist();
+            }
 
             if(this.options.afterHideCallback) {
                 const data = {
@@ -510,55 +513,91 @@ $.extend(Herotable.prototype, {
     showTableControlBtn: function() {
         const control_elements = $(`
             <div class="control-layout">
-                <button><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M24 14.187v-4.374c-2.148-.766-2.726-.802-3.027-1.529-.303-.729.083-1.169 1.059-3.223l-3.093-3.093c-2.026.963-2.488 1.364-3.224 1.059-.727-.302-.768-.889-1.527-3.027h-4.375c-.764 2.144-.8 2.725-1.529 3.027-.752.313-1.203-.1-3.223-1.059l-3.093 3.093c.977 2.055 1.362 2.493 1.059 3.224-.302.727-.881.764-3.027 1.528v4.375c2.139.76 2.725.8 3.027 1.528.304.734-.081 1.167-1.059 3.223l3.093 3.093c1.999-.95 2.47-1.373 3.223-1.059.728.302.764.88 1.529 3.027h4.374c.758-2.131.799-2.723 1.537-3.031.745-.308 1.186.099 3.215 1.062l3.093-3.093c-.975-2.05-1.362-2.492-1.059-3.223.3-.726.88-.763 3.027-1.528zm-4.875.764c-.577 1.394-.068 2.458.488 3.578l-1.084 1.084c-1.093-.543-2.161-1.076-3.573-.49-1.396.581-1.79 1.693-2.188 2.877h-1.534c-.398-1.185-.791-2.297-2.183-2.875-1.419-.588-2.507-.045-3.579.488l-1.083-1.084c.557-1.118 1.066-2.18.487-3.58-.579-1.391-1.691-1.784-2.876-2.182v-1.533c1.185-.398 2.297-.791 2.875-2.184.578-1.394.068-2.459-.488-3.579l1.084-1.084c1.082.538 2.162 1.077 3.58.488 1.392-.577 1.785-1.69 2.183-2.875h1.534c.398 1.185.792 2.297 2.184 2.875 1.419.588 2.506.045 3.579-.488l1.084 1.084c-.556 1.121-1.065 2.187-.488 3.58.577 1.391 1.689 1.784 2.875 2.183v1.534c-1.188.398-2.302.791-2.877 2.183zm-7.125-5.951c1.654 0 3 1.346 3 3s-1.346 3-3 3-3-1.346-3-3 1.346-3 3-3zm0-2c-2.762 0-5 2.238-5 5s2.238 5 5 5 5-2.238 5-5-2.238-5-5-5z"/></svg></button>
+                <button>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M24 14.187v-4.374c-2.148-.766-2.726-.802-3.027-1.529-.303-.729.083-1.169 1.059-3.223l-3.093-3.093c-2.026.963-2.488 1.364-3.224 1.059-.727-.302-.768-.889-1.527-3.027h-4.375c-.764 2.144-.8 2.725-1.529 3.027-.752.313-1.203-.1-3.223-1.059l-3.093 3.093c.977 2.055 1.362 2.493 1.059 3.224-.302.727-.881.764-3.027 1.528v4.375c2.139.76 2.725.8 3.027 1.528.304.734-.081 1.167-1.059 3.223l3.093 3.093c1.999-.95 2.47-1.373 3.223-1.059.728.302.764.88 1.529 3.027h4.374c.758-2.131.799-2.723 1.537-3.031.745-.308 1.186.099 3.215 1.062l3.093-3.093c-.975-2.05-1.362-2.492-1.059-3.223.3-.726.88-.763 3.027-1.528zm-4.875.764c-.577 1.394-.068 2.458.488 3.578l-1.084 1.084c-1.093-.543-2.161-1.076-3.573-.49-1.396.581-1.79 1.693-2.188 2.877h-1.534c-.398-1.185-.791-2.297-2.183-2.875-1.419-.588-2.507-.045-3.579.488l-1.083-1.084c.557-1.118 1.066-2.18.487-3.58-.579-1.391-1.691-1.784-2.876-2.182v-1.533c1.185-.398 2.297-.791 2.875-2.184.578-1.394.068-2.459-.488-3.579l1.084-1.084c1.082.538 2.162 1.077 3.58.488 1.392-.577 1.785-1.69 2.183-2.875h1.534c.398 1.185.792 2.297 2.184 2.875 1.419.588 2.506.045 3.579-.488l1.084 1.084c-.556 1.121-1.065 2.187-.488 3.58.577 1.391 1.689 1.784 2.875 2.183v1.534c-1.188.398-2.302.791-2.877 2.183zm-7.125-5.951c1.654 0 3 1.346 3 3s-1.346 3-3 3-3-1.346-3-3 1.346-3 3-3zm0-2c-2.762 0-5 2.238-5 5s2.238 5 5 5 5-2.238 5-5-2.238-5-5-5z"/></svg>
+                </button>
+
                 <ul>
-                    <li class="show-hidden-columns">${this.options.lang.showHiddenColumn}</li>
+                    <li class="show-hidden-cols-trigger">
+                        ${this.options.lang.showHiddenColumn}
+                        
+                        <ul class="hidden-cols-list"></ul>
+                    </li>
                 </ul>
             </div>
         `);
         this.table.closest('.outer-herotable-wrapper').append(control_elements);
 
+        this.refreshHiddenColumnsListInControlIfExist();
+
         control_elements.find('button').on('click', function() {
             $(this).next('ul').toggle();
         });
 
-        let self = this;
-        control_elements.find('.show-hidden-columns').on('click', function() {
-            $(this).closest('ul').toggle();
-            const hidden_columns = self.hidden_columns;
-            self.showHiddenColumns();
-
-            if(self.options.afterShowHiddenColsCallback) {
-                const data = {cols: hidden_columns};
-                self.options.afterShowHiddenColsCallback(data);
-            }
+        control_elements.find('.show-hidden-cols-trigger').on('click', function() {
+            $(this).find('.hidden-cols-list').toggle();
         });
     },
 
-    removeTableControlBtn: function() {
-        this.table.closest('.outer-herotable-wrapper').find('.control-layout').remove();
-        this.hidden_columns = [];
+    refreshHiddenColumnsListInControlIfExist() {
+        const hidden_cols_list = $('.hidden-cols-list').first();
+        if(hidden_cols_list) {
+            let hidden_columns_list = '<li class="show-hidden-columns" data-show="all">All</li>';
+            this.hidden_columns.forEach((header_col_index) => {
+                const col = this.header_rows_values[0].cols[header_col_index];
+                hidden_columns_list+= `<li class="show-hidden-columns" data-show="${header_col_index}">Col #${col.value}</li>`;
+            });
+            hidden_cols_list.html(hidden_columns_list);
+
+            let self = this;
+            hidden_cols_list.find('.show-hidden-columns').on('click', function() {
+                // Hide the shown lists
+                $(this).closest('.control-layout').find('ul').hide();
+    
+                const show = $(this).attr('data-show');
+                const columns_indices = (show == 'all')? self.hidden_columns : [parseInt(show)]
+                self.showHiddenColumns(columns_indices);
+    
+                if(self.options.afterShowHiddenColsCallback) {
+                    const data = {cols: columns_indices};
+                    self.options.afterShowHiddenColsCallback(data);
+                }
+
+                self.refreshHiddenColumnsListInControlIfExist();
+            });
+        }
     },
 
-    showHiddenColumns: function() {
-        for(let hci = 0; hci < this.hidden_columns.length; hci++) {
-            const header_col_index = this.hidden_columns[hci];
+    removeTableControlBtn: function() {
+        if(this.hidden_columns.length == 0) {
+            this.table.closest('.outer-herotable-wrapper').find('.control-layout').remove();
+        }
+    },
 
-            // show the column in header side
-            this.header.find(`tr th:eq(${header_col_index})`).show();
-            this.header_rows_values[0].cols[header_col_index].is_hidden = false;
-    
-            // show the column in body side
-            this.page_body_rows.forEach((body_row, body_row_index) => {
-                this.body.find(`tr:eq(${body_row_index}) td:eq(${header_col_index})`).show();
-                body_row.cols[header_col_index].is_hidden = false;
-            });
+    showHiddenColumns: function(columns_indices) {
+        const hidden_columns = this.hidden_columns;
+        for(let hci = 0; hci < hidden_columns.length; hci++) {
+            const header_col_index = hidden_columns[hci];
 
-            // show the column in footer side
-            this.footer_rows_values.forEach((footer_row, footer_row_index) => {
-                this.footer.find(`tr:eq(${footer_row_index}) td:eq(${header_col_index})`).show();
-                footer_row.cols[header_col_index].is_hidden = false;
-            });
+            if(columns_indices.includes(header_col_index)) {
+                // show the column in header side
+                this.header.find(`tr th:eq(${header_col_index})`).show();
+                this.header_rows_values[0].cols[header_col_index].is_hidden = false;
+
+                // show the column in body side
+                this.page_body_rows.forEach((body_row, body_row_index) => {
+                    this.body.find(`tr:eq(${body_row_index}) td:eq(${header_col_index})`).show();
+                    body_row.cols[header_col_index].is_hidden = false;
+                });
+
+                // show the column in footer side
+                this.footer_rows_values.forEach((footer_row, footer_row_index) => {
+                    this.footer.find(`tr:eq(${footer_row_index}) td:eq(${header_col_index})`).show();
+                    footer_row.cols[header_col_index].is_hidden = false;
+                });
+
+                this.hidden_columns.splice(hci, 1);
+            }
         }
 
         this.removeTableControlBtn();
