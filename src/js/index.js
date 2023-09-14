@@ -479,14 +479,13 @@ $.extend(Herotable.prototype, {
 
             // hide the columns in body side
             this.page_body_rows.forEach((body_row, body_row_index) => {
-                this.body.find(`tr:eq(${body_row_index}) td:eq(${header_col_index})`).hide();
-                body_row.cols[header_col_index].is_hidden = true;
                 body_row.cols[header_col_index].el[0].style.display = 'none';
+                body_row.cols[header_col_index].is_hidden = true;
             });
 
             // hide the column in footer side
             this.footer_rows_values.forEach((footer_row, footer_row_index) => {
-                this.footer.find(`tr:eq(${footer_row_index}) td:eq(${header_col_index})`).hide();
+                footer_row.cols[header_col_index].el[0].style.display = 'none';
                 footer_row.cols[header_col_index].is_hidden = true;
             });
 
@@ -542,10 +541,10 @@ $.extend(Herotable.prototype, {
     refreshHiddenColumnsListInControlIfExist() {
         const hidden_cols_list = $('.hidden-cols-list').first();
         if(hidden_cols_list) {
-            let hidden_columns_list = '<li class="show-hidden-columns" data-show="all">All</li>';
+            let hidden_columns_list = `<li class="show-hidden-columns" data-show="all">${this.options.lang.all}</li>`;
             this.hidden_columns.forEach((header_col_index) => {
                 const col = this.header_rows_values[0].cols[header_col_index];
-                hidden_columns_list+= `<li class="show-hidden-columns" data-show="${header_col_index}">Col #${col.value}</li>`;
+                hidden_columns_list+= `<li class="show-hidden-columns" data-show="${header_col_index}">#${col.value}</li>`;
             });
             hidden_cols_list.html(hidden_columns_list);
 
@@ -729,14 +728,21 @@ $.extend(Herotable.prototype, {
 
     // Show the (no data row) when there is not rows in table body
     showNoDataRowIfNoData: function() {
-        if(this.body.find('tr').length == 0 && this.options.noAvailableData) {
-            const no_available_data_row = $(
-                `<tr data-rowtype="empty-msg-row">
-                    <td colspan="100%" style="text-align: center;">${this.options.lang.noAvailableData}</td>
-               </tr>`
-            );
-    
-            this.body.html(no_available_data_row);
+        if(this.body.find('tr').length == 0) {
+            this.table.css('table-layout', 'auto');
+
+            if(this.options.noAvailableData) {
+                const shown_header_cols = this.header_rows_values[0].cols.filter((col) => !col.is_hidden).length;
+                const no_available_data_row = $(
+                    `<tr data-rowtype="empty-msg-row">
+                        <td colspan="${shown_header_cols}" style="text-align: center;">${this.options.lang.noAvailableData}</td>
+                   </tr>`
+                );
+                this.body.html(no_available_data_row);
+            }
+        }
+        else {
+            this.table.css('table-layout', 'fixed');   
         }
     },
 
@@ -811,6 +817,7 @@ $.extend(Herotable.prototype, {
     },
 
     destroy: function() {
+        this.table.closest('.herotable').find('.pagination-layout').remove();
         this.table.closest('.herotable').find('.general-search-input').remove();
         this.table.closest('.herotable').find('.control-layout').remove();
         this.table.unwrap().unwrap().unwrap();

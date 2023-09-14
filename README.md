@@ -60,7 +60,7 @@ $('table').herotable({
 |decimalNumberLength| If you enabled the summation on columns, you can make the summation with decimal like: 50.016 through define the length, Number(default: 0)|
 |withPagination | For enable the pagination feature, you must make the value is true, Boolean(default: false)|
 |rowsPerPage | If you enabled the pagination feature, you maybe would like to change the rows count per page, Number(default: 15)|
-|lang                | Change the default text on elements, like (generalSearch, noAvailableData, showHiddenColumn, nextPaginateBtn, prevPaginateBtn)|
+|lang                | Change the default text on elements, like (generalSearch, noAvailableData, showHiddenColumn, nextPaginateBtn, prevPaginateBtn, all)|
 
 
 Example:

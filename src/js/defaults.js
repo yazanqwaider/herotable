@@ -24,5 +24,6 @@ export const defaults = {
         showHiddenColumn: "Show hidden columns",
         nextPaginateBtn: "Next",
         prevPaginateBtn: "Previous",
+        all: "All",
     }
 }
