@@ -766,7 +766,7 @@ $.extend(Herotable.prototype, {
     },
     
     applySumOnColumns() {
-        const sumValuesCell = this.sumValuesCell || 'td';
+        const sumValuesCell = this.options.sumValuesCell || 'td';
         const decimalNumberLength = parseInt(this.options.decimalNumberLength || 0);
 
         this.header_rows_values[0].cols.forEach((col, index) => {
