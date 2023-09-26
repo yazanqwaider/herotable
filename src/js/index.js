@@ -37,7 +37,9 @@ $.extend(Herotable.prototype, {
         
         this.table.wrap(`<div class="herotable">${herotable_wrapper}</div>`);
 
-        this.initializeGeneralSearchInput();
+        if(this.options.generalSearch) {
+            this.initializeGeneralSearchInput();
+        }
 
         this.getTableData();
 

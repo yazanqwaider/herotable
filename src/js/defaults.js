@@ -1,5 +1,6 @@
 export const defaults = {
     isRTL: false,
+    generalSearch: true,
     scrollableWrapper: false,
     columnSearch: true,
     columnResizer: true,
