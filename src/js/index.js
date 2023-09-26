@@ -773,21 +773,13 @@ $.extend(Herotable.prototype, {
 
         this.header_rows_values[0].cols.forEach((col, index) => {
             if(this.options.enableSumValuesOnColumns.includes(index)) {
-                let sum_col_value = parseFloat(this.sumColumnValues(index)).toString();
-                const point_index = sum_col_value.indexOf('.');
+                let sum_col_value = parseFloat(this.sumColumnValues(index));
+                sum_col_value =  sum_col_value.toFixed(decimalNumberLength); // toFixed will round the number
 
-                if(point_index == -1) {
-                    sum_col_value = parseFloat(sum_col_value).toFixed(decimalNumberLength);
-                }
-                else {
-                    if(decimalNumberLength > 0) {
-                        sum_col_value = sum_col_value.slice(0, point_index + decimalNumberLength + 1);
-                    }
-                    else {
-                        sum_col_value = sum_col_value.slice(0, point_index);
-                    }
-                }
-           
+                // Convert the -0 or +0 to 0
+                const zero_number = parseFloat(0).toFixed(decimalNumberLength);
+                sum_col_value = (sum_col_value == '-' + zero_number || sum_col_value == '+' + zero_number)? zero_number : sum_col_value;
+
                 if(sumValuesCell == 'td') {
                     this.footer_rows_values[0].cols[index].el[0].innerText = sum_col_value;
                 }

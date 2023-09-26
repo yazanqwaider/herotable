@@ -45,6 +45,7 @@ $('table').herotable({
 |       Name         |      Description     |
 |--------------------| ---------------------|
 |isRTL               | If the table is in RTL direction, make it rtl in herotable, Boolean (default: false)|
+|GeneralSearch       | Show the general search input above the table, Boolean (default: false) |
 |scrollableWrapper   | Make the table scrollable, Boolean (default: false)|
 |columnSearch        | Enable searching on each column, Boolean (default: true)|
 |columnResizer       | Enable resizing feature on columns, Boolean (default: true)|
