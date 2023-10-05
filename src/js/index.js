@@ -74,10 +74,7 @@ $.extend(Herotable.prototype, {
 
         this.showNoDataRowIfNoData();
         this.hideFooterIfBodyEmpty();
-
-        if(this.footer_rows_values.length > 0) {
-            this.applySumOnColumns();
-        }
+        this.applySumOnColumns();
     },
 
     getTableData: function() {
@@ -404,10 +401,7 @@ $.extend(Herotable.prototype, {
             this.recalculateResizerHeight();
             this.showNoDataRowIfNoData();
             this.hideFooterIfBodyEmpty();
-
-            if(this.footer_rows_values.length > 0) {
-                this.applySumOnColumns();
-            }
+            this.applySumOnColumns();
         });
     },
   
@@ -444,10 +438,7 @@ $.extend(Herotable.prototype, {
             this.recalculateResizerHeight();
             this.showNoDataRowIfNoData();
             this.hideFooterIfBodyEmpty();
-
-            if(this.footer_rows_values.length > 0) {
-                this.applySumOnColumns();
-            }
+            this.applySumOnColumns();
         });
     },
 
@@ -768,26 +759,32 @@ $.extend(Herotable.prototype, {
     },
     
     applySumOnColumns() {
-        const sumValuesCell = this.options.sumValuesCell || 'td';
-        const decimalNumberLength = parseInt(this.options.decimalNumberLength || 0);
-
-        this.header_rows_values[0].cols.forEach((col, index) => {
-            if(this.options.enableSumValuesOnColumns.includes(index)) {
-                let sum_col_value = parseFloat(this.sumColumnValues(index));
-                sum_col_value =  sum_col_value.toFixed(decimalNumberLength); // toFixed will round the number
-
-                // Convert the -0 or +0 to 0
-                const zero_number = parseFloat(0).toFixed(decimalNumberLength);
-                sum_col_value = (sum_col_value == '-' + zero_number || sum_col_value == '+' + zero_number)? zero_number : sum_col_value;
-
-                if(sumValuesCell == 'td') {
-                    this.footer_rows_values[0].cols[index].el[0].innerText = sum_col_value;
+        if(this.options.enableSumValuesOnColumns.length > 0 && this.footer_rows_values.length > 0) {
+            const sumValuesCell = this.options.sumValuesCell || 'td';
+            const decimalNumberLength = parseInt(this.options.decimalNumberLength || 0);
+    
+            this.header_rows_values[0].cols.forEach((col, index) => {
+                if(this.options.enableSumValuesOnColumns.includes(index)) {
+                    let sum_col_value = parseFloat(this.sumColumnValues(index));
+                    sum_col_value =  sum_col_value.toFixed(decimalNumberLength); // toFixed will round the number
+    
+                    // Convert the -0 or +0 to 0
+                    const zero_number = parseFloat(0).toFixed(decimalNumberLength);
+                    sum_col_value = (sum_col_value == '-' + zero_number || sum_col_value == '+' + zero_number)? zero_number : sum_col_value;
+    
+                    if(sumValuesCell == 'td') {
+                        this.footer_rows_values[0].cols[index].el[0].innerText = sum_col_value;
+                    }
+                    else {
+                        this.footer_rows_values[0].cols[index].el[0].querySelector(sumValuesCell).innerText = sum_col_value;
+                    }
                 }
-                else {
-                    this.footer_rows_values[0].cols[index].el[0].querySelector(sumValuesCell).innerText = sum_col_value;
-                }
+            });
+
+            if(this.options.afterSumCallback && typeof this.options.afterSumCallback == 'function') {
+                this.options.afterSumCallback();
             }
-        });
+        }
     },
 
     sumColumnValues(header_col_index) {

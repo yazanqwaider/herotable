@@ -13,6 +13,7 @@ export const defaults = {
     enableSumValuesOnColumns: [],
     sumValuesCell: 'td',    // in tfoot
     decimalNumberLength: 0,
+    afterSumCallback: null,
     withPagination: false,
     rowsPerPage: 15,
     columns: {
