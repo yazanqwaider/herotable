@@ -81,6 +81,7 @@ $.extend(Herotable.prototype, {
         this.table_height = this.table.outerHeight();
         this.header_rows_values = this.getHeaderRowsValues();
         this.body_rows_values = this.getBodyRowsValues();
+        this.detectAllHeaderColumnsTypes();
         this.page_body_rows = this.getPageBodyRows();
         this.footer_rows_values = this.getFooterRowsValues();
     },
@@ -102,7 +103,8 @@ $.extend(Herotable.prototype, {
                     html: col.outerHTML,
                     value: $(col).text(),
                     sort_by: '',
-                    is_hidden: false
+                    is_hidden: false,
+                    type: 'string'
                 });
             });
     
@@ -158,6 +160,62 @@ $.extend(Herotable.prototype, {
         }
 
         return page_body_rows;
+    },
+
+    // Detect all header rows columns types
+    detectAllHeaderColumnsTypes() {
+        if(this.header_rows_values.length > 0) {
+            const first_header_row = this.header_rows_values[0];
+            first_header_row.cols.map((hc, header_col_index) => {
+                this.header_rows_values[0].cols[header_col_index].type = this.detectColumnType(header_col_index);
+            });
+        }
+    },
+
+    // Detect the column type
+    detectColumnType(column_index) {
+        const types_counts = {
+            'string': 0,
+            'number': 0,
+            'date': 0,
+        };
+        console.log(this.header_rows_values[0].cols[column_index].value);
+
+        this.body_rows_values.forEach((body_row) => {
+            // TODO: fix the is_colspan issue
+
+            const col = body_row.cols[column_index];
+            const value = col.value;
+            if(value) {
+                if(isNaN(value) && new Date(value) != 'Invalid Date') {
+                    types_counts['date']++;
+                    return;
+                }
+
+                const sanitized_number = value.replace('/.|,/g', '');
+                if(!isNaN(+sanitized_number)) {
+                    types_counts['number']++;
+                    return;
+                }
+
+                types_counts['string']++;
+            }
+            else {
+                types_counts['string']++;
+            }
+        });
+
+        console.log(types_counts)
+        let largest_type = {'type': 'string', 'repetitions': 0};
+        for (const type_key in types_counts) {
+            const repetitions = types_counts[type_key];
+            if(repetitions > largest_type['repetitions']) {
+                largest_type['type'] = type_key;
+                largest_type['repetitions'] = repetitions;
+            }
+        }
+ 
+        return largest_type['type'];
     },
 
     // Refresh the body rows through remove the exist rows and add the page_body_rows.
@@ -612,6 +670,8 @@ $.extend(Herotable.prototype, {
         const first_sort_by = this.header_rows_values[0].cols[header_col_index].sort_by;
         header_col.append(`<span class="header-sort-icon">${sorting_icons_map[first_sort_by]}</span>`);
 
+        const col_type = this.header_rows_values[0].cols[header_col_index].type;
+
         // register the sort icon event
         const header_sort_icon = header_col.find('.header-sort-icon');
         let self = this;
@@ -626,7 +686,26 @@ $.extend(Herotable.prototype, {
                 if(header_col_index <= first.cols.length - 1 && header_col_index <= second.cols.length - 1) {
                     const first_value = first.cols[header_col_index].value;
                     const second_value = second.cols[header_col_index].value;
-                    let result = first_value.localeCompare(second_value);
+
+                    let result = -1;
+                    if(col_type == 'string') {
+                        result = first_value.localeCompare(second_value);
+                    }
+                    else if(col_type == 'date') {
+                        result = new Date(first_value.replace('/', '-')) - new Date(second_value.replace('/', ''));
+                    }
+                    else if(col_type == 'number') {
+                        result = (+first_value.replace('/.|,/g', '')) - (+second_value.replace('/.|,/g', ''));
+                    }
+                    result = (isNaN(result))? -1 : result;
+
+                    if(result > 1) {
+                        result = 1;
+                    }
+                    else if(result < -1) {
+                        result = -1;
+                    }
+
                     result = (new_sort_by == 'desc')? result * -1 : result;
 
                     if(new_sort_by == 'asc') {
