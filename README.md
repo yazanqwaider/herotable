@@ -55,13 +55,15 @@ $('table').herotable({
 |afterHideCallback   | You can call your callback function after column hiding, function (default: null)|
 |afterShowHiddenColsCallback| You can call your callback function after show the hidden columns, function (default: null)|
 |hideFooterIfBodyEmpty| You can hide the footer when you search on something and the no results, Boolean (default: true)|
-|columns             | From `columns` option you can edit the column width and column visibility at the  begining, Object (default: {sizes: {}, hidden: []})|
+|columns             | From `columns` option you can edit the column width and column visibility at the  begining, Object (default: {sizes: {}, hidden: [], types: []})|
 |enableSumValuesOnColumns | You can enable sum values on columns and put the summation in footer, Array(default: [])|
 |sumValuesCell | When you enable the summation on column, the summation will be displayed in ```td``` tag in the same index in footer, but you can determine nested element inside td, string (default: 'td')|
 |decimalNumberLength| If you enabled the summation on columns, you can make the summation with decimal like: 50.016 through define the length, Number(default: 0)|
 |withPagination | For enable the pagination feature, you must make the value is true, Boolean(default: false)|
 |rowsPerPage | If you enabled the pagination feature, you maybe would like to change the rows count per page, Number(default: 15)|
 |lang                | Change the default text on elements, like (generalSearch, noAvailableData, showHiddenColumn, nextPaginateBtn, prevPaginateBtn, all)|
+|dateFormatFunc| The default format for date columns is ISO 8601, the date that you added in the table cells will passed to new Date() method automatically, but if you want a custom date format, use ```dateFormatFunc``` and return a timestamp value.|
+
 
 
 Example:
@@ -94,6 +96,33 @@ For a **scrollableWrapper** optionm you can determine the max height of the wrap
     max-height: 350px !important;  /* default is 50vh */
 }
 ```
+
+**Date Format :**
+```js
+// you can use any date library you want, we'll use moment.js as an example.
+<script src="//momentjs.com/downloads/moment-with-locales.js"></script>
+
+$('table').herotable({
+    dateFormatFunc: function(date) {
+        // If we show the dates in table by this format (DD/MM/YYYY), so
+        // we'll parse it to timestamp like that through moment.js
+        return +moment(date, 'DD/MM/YYYY');
+    }
+});
+```
+
+**Columns Types :**
+There are an automatically types detector for columns, and you can also define the columns types manually like that:
+
+```js
+$('table').herotable({
+    // available types: number - string - date
+    columns: {
+        types: ['number', 'number', 'string', 'date'],
+    }
+});
+```
+
 
 If you would like to destroy the herotable :
 ```js

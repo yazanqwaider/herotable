@@ -166,8 +166,20 @@ $.extend(Herotable.prototype, {
     detectAllHeaderColumnsTypes() {
         if(this.header_rows_values.length > 0) {
             const first_header_row = this.header_rows_values[0];
+            const options_columns_types = this.options.columns.types;
+
             first_header_row.cols.map((hc, header_col_index) => {
-                this.header_rows_values[0].cols[header_col_index].type = this.detectColumnType(header_col_index);
+                let type = null;
+                
+                const passed_col_type = (options_columns_types.length - 1 >= header_col_index)? options_columns_types[header_col_index] : null;
+                if(passed_col_type && ['string', 'number', 'date'].includes(passed_col_type)) {
+                    type = passed_col_type;
+                }
+                else {
+                    type = this.detectColumnType(header_col_index);
+                }
+
+                this.header_rows_values[0].cols[header_col_index].type = type || 'string';
             });
         }
     },
@@ -179,20 +191,18 @@ $.extend(Herotable.prototype, {
             'number': 0,
             'date': 0,
         };
-        console.log(this.header_rows_values[0].cols[column_index].value);
 
+        const dateFormatFunc = this.options.dateFormatFunc;
         this.body_rows_values.forEach((body_row) => {
-            // TODO: fix the is_colspan issue
+            const value = body_row.cols[column_index].value;
 
-            const col = body_row.cols[column_index];
-            const value = col.value;
             if(value) {
-                if(isNaN(value) && new Date(value) != 'Invalid Date') {
+                if(isNaN(value) && ((dateFormatFunc && dateFormatFunc(value)) || new Date(value) != 'Invalid Date')) {
                     types_counts['date']++;
                     return;
                 }
 
-                const sanitized_number = value.replace('/.|,/g', '');
+                const sanitized_number = value.replace(/[,$€£¥]/g, '');
                 if(!isNaN(+sanitized_number)) {
                     types_counts['number']++;
                     return;
@@ -205,7 +215,6 @@ $.extend(Herotable.prototype, {
             }
         });
 
-        console.log(types_counts)
         let largest_type = {'type': 'string', 'repetitions': 0};
         for (const type_key in types_counts) {
             const repetitions = types_counts[type_key];
@@ -681,30 +690,30 @@ $.extend(Herotable.prototype, {
             self.header_rows_values[0].cols[header_col_index].sort_by = new_sort_by;
             $(this).html(sorting_icons_map[new_sort_by]);
             const parentNode = self.body[0];
+            const dateFormatFunc = self.options.dateFormatFunc;
 
             self.page_body_rows.sort(function(first, second) {
                 if(header_col_index <= first.cols.length - 1 && header_col_index <= second.cols.length - 1) {
                     const first_value = first.cols[header_col_index].value;
                     const second_value = second.cols[header_col_index].value;
 
-                    let result = -1;
+                    let result = 0;
                     if(col_type == 'string') {
                         result = first_value.localeCompare(second_value);
                     }
                     else if(col_type == 'date') {
-                        result = new Date(first_value.replace('/', '-')) - new Date(second_value.replace('/', ''));
+                        const parse_first_date = (dateFormatFunc && dateFormatFunc(first_value)) || new Date(first_value);
+                        const parse_second_date = (dateFormatFunc && dateFormatFunc(second_value)) || new Date(first_value);
+                        result = parse_first_date - parse_second_date;
                     }
                     else if(col_type == 'number') {
-                        result = (+first_value.replace('/.|,/g', '')) - (+second_value.replace('/.|,/g', ''));
+                        result = (+first_value.replace(/[,$€£¥]/g, '')) - (+second_value.replace(/[,$€£¥]/g, ''));
                     }
-                    result = (isNaN(result))? -1 : result;
 
-                    if(result > 1) {
-                        result = 1;
-                    }
-                    else if(result < -1) {
-                        result = -1;
-                    }
+                    result = (isNaN(result))? 0 : result;
+                    if(result >= 1) result = 1;
+                    else if(result < 0) result = -1;
+                    else result = 0;
 
                     result = (new_sort_by == 'desc')? result * -1 : result;
 

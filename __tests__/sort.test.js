@@ -37,8 +37,7 @@ test('Sort the first column descendingly', function() {
     first_header_row_col.trigger('click');
     setTimeout(() => {
         first_header_row_col.trigger('click');
+        const first_body_row_col = instance.find('tbody tr td').first();
+        expect(first_body_row_col.text()).toBe('body col 2.1');
     }, 100);
-
-    const first_body_row_col = instance.find('tbody tr td').first();
-    expect(first_body_row_col.text()).toBe('body col 2.1');
 });

@@ -16,9 +16,11 @@ export const defaults = {
     afterSumCallback: null,
     withPagination: false,
     rowsPerPage: 15,
+    dateFormatFunc: null, // the default is (ISO 8601), which means the date will pass to new Date() method.
     columns: {
         sizes: {},
         hidden: [],
+        types: [],
     },
     lang: {
         generalSearch: "Search",
