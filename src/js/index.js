@@ -23,7 +23,7 @@ let Herotable = function(element, mode = 'initialize', options) {
         this.init();
     }
 
-    if(mode == 'destroy'){
+    if(mode == 'destroy') {
         this.getTableData();
         this.destroy();
     }
@@ -54,6 +54,8 @@ $.extend(Herotable.prototype, {
             const header_cols_length = header_row_cols.length;
 
             header_row_cols.each((header_col_index, header_row_col) => {
+                $(header_row_col).html(`<span class="nested-header-col-layout">${$(header_row_col).html()}</span>`);
+
                 if(this.options.columnSearch) {
                     this.initializeSearchInput(header_col_index, header_row_col);
                 }
