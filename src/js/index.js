@@ -54,7 +54,11 @@ $.extend(Herotable.prototype, {
             const header_cols_length = header_row_cols.length;
 
             header_row_cols.each((header_col_index, header_row_col) => {
-                $(header_row_col).html(`<span class="nested-header-col-layout">${$(header_row_col).html()}</span>`);
+                // clone the header columns contents without trash the connected js events
+                const nested_header_col_layout = $('<div class="nested-header-col-layout"></div>');
+                $(header_row_col).contents().each((content_index, content_el) => nested_header_col_layout.append(content_el));
+                $(header_row_col).children().detach();
+                $(header_row_col).html(nested_header_col_layout);
 
                 if(this.options.columnSearch) {
                     this.initializeSearchInput(header_col_index, header_row_col);
