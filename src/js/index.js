@@ -282,7 +282,7 @@ $.extend(Herotable.prototype, {
 
         this.header.find('tr').each((row_index, row) => {
             $(row).find('th').each((col_index, col) => {
-                const width = columns_styles.sizes[col_index] || $(col).width();
+                const width = columns_styles.sizes[col_index] || $(col).outerWidth();
                 $(col).css('width', width + 'px');
                 
                 if(columns_styles.hidden.includes(col_index)) {
@@ -829,7 +829,7 @@ $.extend(Herotable.prototype, {
             }
         }
         else {
-            this.table.css('table-layout', 'fixed');   
+            this.table.css('table-layout', 'fixed');
         }
     },
 
