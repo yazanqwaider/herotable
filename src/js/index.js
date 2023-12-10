@@ -123,6 +123,8 @@ $.extend(Herotable.prototype, {
     // Get the body rows data to make easy to deal with
     getBodyRowsValues: function() {
         let body_rows_values = [];
+        const table_col_ratio = 100 / this.header_rows_values[0].cols.length; 
+
         this.body.find('tr').each((row_index, row) => {
             let body_row = {
                 el: $(row),
@@ -132,8 +134,16 @@ $.extend(Herotable.prototype, {
             };
 
             $(row).find('td').each((col_index, col) => {
-                const colspan = $(col).attr('colspan') || 1;
-                
+                let colspan = $(col).attr('colspan') || '1';
+                if(colspan.includes('%')) {
+                    colspan = parseInt(colspan.substring(0, colspan.length));
+                    colspan = parseInt(Math.floor(colspan / table_col_ratio));
+                    $(col).attr('colspan', colspan);
+                }
+                else {
+                    colspan = parseInt(colspan);
+                }
+
                 for (let i = 0; i < colspan; i++) {
                     body_row.cols.push({
                         el: $(col),
@@ -200,7 +210,7 @@ $.extend(Herotable.prototype, {
 
         const dateFormatFunc = this.options.dateFormatFunc;
         this.body_rows_values.forEach((body_row) => {
-            const value = body_row.cols[column_index].value;
+            const value = (body_row.cols.length > column_index)? body_row.cols[column_index].value : null;
 
             if(value) {
                 if(isNaN(value) && ((dateFormatFunc && dateFormatFunc(value)) || new Date(value) != 'Invalid Date')) {
@@ -884,8 +894,8 @@ $.extend(Herotable.prototype, {
     sumColumnValues(header_col_index) {
         const sum_col_values = this.page_body_rows.reduce((summation, row) => {
             if(row.el[0].isConnected) {
-                const col = row.cols[header_col_index];
-                if(!col.is_hidden) {
+                const col = (row.cols.length > header_col_index)? row.cols[header_col_index] : null;
+                if(col && !col.is_hidden) {
                     if(typeof(col.value) == 'string' || typeof(col.value) == 'number') {
                         const value = (col.value + '').replaceAll(/[^0-9.]/g, '');
                         if(value) {
