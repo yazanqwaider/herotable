@@ -887,8 +887,8 @@ $.extend(Herotable.prototype, {
                 const col = row.cols[header_col_index];
                 if(!col.is_hidden) {
                     if(typeof(col.value) == 'string' || typeof(col.value) == 'number') {
-                        const value = (col.value + '').replaceAll(',', '');
-                        if(value && !isNaN(value)) {
+                        const value = (col.value + '').replaceAll(/[^0-9.]/g, '');
+                        if(value) {
                             summation+= parseFloat(value);
                         }
                     }
