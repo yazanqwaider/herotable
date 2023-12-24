@@ -899,7 +899,7 @@ $.extend(Herotable.prototype, {
                     if(typeof(col.value) == 'string' || typeof(col.value) == 'number') {
                         const value = (col.value + '').replaceAll(/[^0-9.-]/g, '');
                         if(value) {
-                            summation+= parseFloat(value);
+                            summation+= parseFloat(value) || 0;
                         }
                     }
                 }
