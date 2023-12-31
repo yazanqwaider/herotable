@@ -14,6 +14,7 @@ export const defaults = {
     sumValuesCell: 'td',    // in tfoot
     decimalNumberLength: 0,
     afterSumCallback: null,
+    preserveState: true,
     withPagination: false,
     rowsPerPage: 15,
     dateFormatFunc: null, // the default is (ISO 8601), which means the date will pass to new Date() method.

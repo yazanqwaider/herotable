@@ -81,6 +81,7 @@ $.extend(Herotable.prototype, {
         this.showNoDataRowIfNoData();
         this.hideFooterIfBodyEmpty();
         this.applySumOnColumns();
+        this.registerPreserveState();
     },
 
     getTableData: function() {
@@ -909,6 +910,31 @@ $.extend(Herotable.prototype, {
         }, 0);
 
         return sum_col_values;
+    },
+
+    registerPreserveState() {
+        const general_search_input = this.table.find('.general-search-input');
+
+        window.addEventListener('pageshow', (event) => {
+            if(this.options.preserveState) {
+                if(this.options.generalSearch && general_search_input.val().length > 0) {
+                    general_search_input.trigger('search');
+                }
+
+                const first_filled_input = this.header.find('tr .header-search-input').filter(function () {
+                    return $(this).val().trim().length != 0;
+                }).first();
+    
+                if(first_filled_input) {
+                    first_filled_input.trigger('search');
+                }
+            }
+            else {
+                // empty the search inputs
+                general_search_input.val('');
+                this.header.find('tr .header-search-input').val('');
+            }
+        });      
     },
 
     destroy: function() {
