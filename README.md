@@ -63,7 +63,7 @@ $('table').herotable({
 |rowsPerPage | If you enabled the pagination feature, you maybe would like to change the rows count per page, Number(default: 15)|
 |lang                | Change the default text on elements, like (generalSearch, noAvailableData, showHiddenColumn, nextPaginateBtn, prevPaginateBtn, all)|
 |dateFormatFunc| The default format for date columns is ISO 8601, the date that you added in the table cells will passed to new Date() method automatically, but if you want a custom date format, use ```dateFormatFunc``` and return a timestamp value.|
-
+|preserveState | Preserve the state in the search inputs when return back to the page. Boolean(default: true)|
 
 
 Example:
