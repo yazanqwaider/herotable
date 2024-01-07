@@ -457,14 +457,14 @@ $.extend(Herotable.prototype, {
         this.table.closest('.herotable').prepend(general_input);
 
         general_input.on('keyup search', (e) => {
-            const value = e.target.value;
+            const value = (this.options.searchCaseSensitive)? e.target.value : e.target.value.toLowerCase();
             let valid_rows = [];
 
             if(value) {
                 for (let i = 0; i < this.page_body_rows.length; i++) {
                     const row_cols = this.page_body_rows[i].cols;
                     for (let col_index = 0; col_index < row_cols.length; col_index++) {
-                        const col_value = row_cols[col_index].value;
+                        const col_value = (this.options.searchCaseSensitive)? row_cols[col_index].value : row_cols[col_index].value.toLowerCase();
 
                         if(col_value.includes(value)) {
                             valid_rows.push(this.page_body_rows[i].el[0]);
@@ -497,13 +497,15 @@ $.extend(Herotable.prototype, {
         // register the search input event
         const header_search_input = header_col.find('.header-search-input');
         header_search_input.on('keyup search', (e) => {
-            const value = e.target.value;
+            const value = (this.options.searchCaseSensitive)? e.target.value : e.target.value.toLowerCase();
             let valid_rows = [];
 
             if(value) {
                 for (let i = 0; i < this.page_body_rows.length; i++) {
                     if(header_col_index <= this.page_body_rows[i].cols.length - 1) {
-                        const col_value = this.page_body_rows[i].cols[header_col_index].value;
+                        const col = this.page_body_rows[i].cols[header_col_index];
+                        const col_value = (this.options.searchCaseSensitive)? col.value : col.value.toLowerCase();
+
                         if(col_value.includes(value)) {
                             valid_rows.push(this.page_body_rows[i].el[0]);
                         }

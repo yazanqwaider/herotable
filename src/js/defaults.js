@@ -15,6 +15,7 @@ export const defaults = {
     decimalNumberLength: 0,
     afterSumCallback: null,
     preserveState: true,
+    searchCaseSensitive: true,
     withPagination: false,
     rowsPerPage: 15,
     dateFormatFunc: null, // the default is (ISO 8601), which means the date will pass to new Date() method.
