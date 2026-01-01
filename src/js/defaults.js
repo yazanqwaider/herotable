@@ -18,6 +18,7 @@ export const defaults = {
     searchCaseSensitive: true,
     withPagination: false,
     rowsPerPage: 15,
+    paginationSearchStrict: true,
     dateFormatFunc: null, // the default is (ISO 8601), which means the date will pass to new Date() method.
     columns: {
         sizes: {},

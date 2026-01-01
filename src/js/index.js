@@ -340,10 +340,10 @@ $.extend(Herotable.prototype, {
     },
 
     // Apply the pagination feature if it enabled in options
-    applyPagination: function() {
+    applyPagination: function(all_rows_count) {
         if(this.options.withPagination) {
             const rowsPerPage = this.options.rowsPerPage || 15;
-            this.pages_count = Math.ceil(this.body_rows_values.length / rowsPerPage);
+            this.pages_count = Math.ceil((all_rows_count || this.body_rows_values.length) / rowsPerPage);
 
             let pagesHtmlElements = '<div class="pagination-layout">';
             pagesHtmlElements+= `
@@ -367,6 +367,8 @@ $.extend(Herotable.prototype, {
             `;
             pagesHtmlElements+= '</div>';
 
+            
+            $('.herotable .pagination-layout').remove(); // remove old pagination-layout if exists
             $('.herotable').append(pagesHtmlElements);
 
             let self = this;
@@ -498,24 +500,33 @@ $.extend(Herotable.prototype, {
         const header_search_input = header_col.find('.header-search-input');
         header_search_input.on('keyup search', (e) => {
             const value = (this.options.searchCaseSensitive)? e.target.value : e.target.value.toLowerCase();
+            const searchable_rows = (this.options.paginationSearchStrict)? this.page_body_rows : this.body_rows_values;
             let valid_rows = [];
 
             if(value) {
-                for (let i = 0; i < this.page_body_rows.length; i++) {
-                    if(header_col_index <= this.page_body_rows[i].cols.length - 1) {
-                        const col = this.page_body_rows[i].cols[header_col_index];
+                for (let i = 0; i < searchable_rows.length; i++) {
+                    if(header_col_index <= searchable_rows[i].cols.length - 1) {
+                        const col = searchable_rows[i].cols[header_col_index];
                         const col_value = (this.options.searchCaseSensitive)? col.value : col.value.toLowerCase();
 
                         if(col_value.includes(value)) {
-                            valid_rows.push(this.page_body_rows[i].el[0]);
+                            valid_rows.push(searchable_rows[i].el[0]);
                         }
                     }
+                }
+
+                if(this.options.paginationSearchStrict == false) {
+                    this.applyPagination(valid_rows.length);
                 }
             }
             else {
                 for (let i = 0; i < this.page_body_rows.length; i++) {
                     valid_rows.push(this.page_body_rows[i].el[0]);
                 }			
+                
+                if(this.options.paginationSearchStrict == false) {
+                    this.applyPagination();
+                }
             }
 
             this.body.children().detach();
@@ -936,7 +947,7 @@ $.extend(Herotable.prototype, {
                 general_search_input.val('');
                 this.header.find('tr .header-search-input').val('');
             }
-        });      
+        });        
     },
 
     destroy: function() {
